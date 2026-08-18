@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel de Obras — SPA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        /* ==========================================================================
+           CSS ORIGINAL DO PROJETO
+           ========================================================================== */
+        :root {
+          --bg: #e7f0f9; --panel: #d3e6f6; --panel-2: #bdd8ef; --line: #a4c6e6;
+          --text: #1c2b3a; --text-dim: #62788d; --amber: #c9820f; --cyan: #2f6fed;
+          --green: #1a9463; --red: #d5455c;
+          --shadow: 0 1px 2px rgba(30,58,95,.06), 0 6px 18px rgba(30,58,95,.07);
+          --font-ui: 'Inter', 'Segoe UI', system-ui, sans-serif;
+          --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+        }
+        * { box-sizing: border-box; }
+        body {
+          margin: 0;
+          background: radial-gradient(1200px 700px at 15% -10%, #5cabdd 0%, transparent 55%), linear-gradient(180deg, #1f6fa8 0%, #0f3a5c 100%);
+          background-attachment: fixed;
+          color: var(--text); font-family: var(--font-ui);
+        }
+        /* Topbar */
+        .topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 28px; background: var(--panel); border-bottom: 1px solid var(--line); box-shadow: var(--shadow); }
+        .topbar .brand { font-family: var(--font-mono); letter-spacing: .08em; font-size: 13px; color: var(--cyan); text-transform: uppercase; text-decoration: none; cursor: pointer; }
+        .topbar-nav { display: flex; align-items: center; gap: 10px; }
+        .nav-btn { font-family: var(--font-ui); font-size: 12.5px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); border-radius: 6px; padding: 7px 12px; cursor: pointer; }
+        .nav-btn:hover, .nav-btn.active { border-color: var(--cyan); color: var(--cyan); }
+        .nav-btn-primary { background: var(--cyan); color: #ffffff; border-color: var(--cyan); }
+        .nav-btn-primary:hover { filter: brightness(1.08); color: #ffffff; }
+        .avatar-menu { position: relative; margin-left: 4px; padding-left: 12px; border-left: 1px solid var(--line); }
+        .avatar-circle { list-style: none; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; background: var(--panel-2); border: 1px solid var(--line); color: var(--cyan); font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+        .avatar-circle::-webkit-details-marker { display: none; }
+        .avatar-dropdown { position: absolute; top: calc(100% + 10px); right: 0; min-width: 190px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; box-shadow: 0 14px 34px rgba(30,58,95,.18); z-index: 50; }
+        .avatar-dropdown-nome { font-size: 13px; font-weight: 600; }
+        .avatar-dropdown-perfil { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-dim); text-transform: uppercase; margin-top: 2px; }
+        .avatar-dropdown-hr { border: none; border-top: 1px solid var(--line); margin: 10px 0; }
+        .avatar-dropdown-link { display: block; font-size: 13px; font-weight: 600; color: var(--red); text-decoration: none; cursor: pointer;}
+        /* Containers e Layout */
+        .container { max-width: 1180px; margin: 0 auto; padding: 28px 20px 60px; }
+        .section-title { font-size: 15px; font-weight: 600; margin: 34px 0 14px; display: flex; align-items: center; gap: 8px; color: #f0f7fd; }
+        .section-title::before { content: ''; width: 3px; height: 14px; background: var(--amber); border-radius: 2px; }
+        /* Grid de Status */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 8px; }
+        .stat-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; box-shadow: var(--shadow); }
+        .stat-value { font-family: var(--font-mono); font-size: 28px; font-weight: 700; color: var(--cyan); line-height: 1.2; }
+        .stat-value.stat-amber { color: var(--amber); } .stat-value.stat-green { color: var(--green); } .stat-value.stat-dim { color: var(--text-dim); } .stat-value.stat-red { color: var(--red); }
+        .stat-label { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+        /* Cards Dashboard */
+        .dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+        .dash-card { display: flex; gap: 18px; align-items: flex-start; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 20px; text-decoration: none; color: var(--text); cursor: pointer; box-shadow: var(--shadow); transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+        .dash-card:hover { border-color: var(--cyan); transform: translateY(-2px); box-shadow: 0 10px 26px rgba(47,111,237,.16); }
+        .dash-card-ring { --pct: 0; --ring-color: var(--text-dim); width: 76px; height: 76px; border-radius: 50%; background: conic-gradient(var(--ring-color) calc(var(--pct) * 3.6deg), var(--panel-2) 0deg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .dash-card-ring-inner { width: 58px; height: 58px; border-radius: 50%; background: var(--panel); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: var(--ring-color); }
+        .dash-card-info { flex: 1; min-width: 0; }
+        .dash-card-nome { font-size: 15px; font-weight: 600; margin-bottom: 12px; line-height: 1.3; }
+        .dash-card-linha { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+        .dash-card-label { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; color: var(--text-dim); }
+        .dash-card-valor { font-size: 12.5px; color: var(--text); }
+        /* Kanban */
+        .kanban { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+        .etapa-col { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; display: flex; flex-direction: column; min-height: 260px; box-shadow: var(--shadow); }
+        .etapa-col-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 12px 14px 10px; border-bottom: 1px solid var(--line); }
+        .etapa-ordem { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
+        .etapa-nome { font-size: 13.5px; font-weight: 600; margin-top: 2px; }
+        .etapa-col-body { padding: 12px 14px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .etapa-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+        .etapa-datas { display: flex; flex-direction: column; gap: 3px; font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
+        .etapa-datas strong { color: var(--text); font-weight: 600; }
+        .etapa-col-atrasada { border-color: var(--red); box-shadow: 0 0 0 1px var(--red) inset; }
+        .status-atrasada { color: var(--red); background: rgba(213,69,92,.12); }
+        .etapa-ring { --pct: 0; --ring-color: var(--text-dim); width: 42px; height: 42px; border-radius: 50%; background: conic-gradient(var(--ring-color) calc(var(--pct) * 3.6deg), var(--panel-2) 0deg); display: flex; align-items: center; justify-content: center; }
+        .etapa-ring-inner { width: 31px; height: 31px; border-radius: 50%; background: var(--panel); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 9.5px; font-weight: 700; color: var(--ring-color); }
+        /* Tabela */
+        .devices-table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: 13px; box-shadow: var(--shadow); }
+        .devices-table th, .devices-table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); }
+        .devices-table tbody tr:last-child td { border-bottom: none; }
+        .devices-table tbody tr:hover { background: var(--panel-2); }
+        .devices-table th { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--text-dim); background: var(--panel-2); }
+        /* Badges */
+        .badge { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; padding: 4px 9px; border-radius: 20px; width: fit-content; }
+        .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+        .status-pendente { color: var(--text-dim); background: rgba(98,120,141,.12); }
+        .status-andamento { color: var(--amber); background: rgba(201,130,15,.12); }
+        .status-concluida { color: var(--green); background: rgba(26,148,99,.12); }
+        /* Botões */
+        .btn { font-family: var(--font-ui); font-size: 12.5px; font-weight: 600; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); border-radius: 6px; padding: 7px 10px; cursor: pointer; text-align: center; }
+        .btn:hover:not(:disabled) { border-color: var(--cyan); color: var(--cyan); } .btn:disabled { opacity: .35; cursor: not-allowed; }
+        .btn-primary { background: var(--cyan); color: #ffffff; border-color: var(--cyan); }
+        .btn-primary:hover:not(:disabled) { color: #ffffff; filter: brightness(1.08); }
+        /* Login */
+        .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-box { width: 100%; max-width: 340px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 32px 28px; box-shadow: 0 20px 50px rgba(30,58,95,.12); }
+        .login-brand { font-family: var(--font-mono); font-size: 13px; color: var(--cyan); text-transform: uppercase; }
+        .login-sub { font-size: 20px; font-weight: 600; margin: 4px 0 22px; }
+        .login-form label { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--text-dim); font-family: var(--font-mono); margin-bottom: 15px;}
+        .login-form input { font-family: var(--font-ui); font-size: 13.5px; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; }
+        .login-form input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(47,111,237,.15); }
+        .login-erro { background: rgba(213,69,92,.1); color: var(--red); border: 1px solid rgba(213,69,92,.3); border-radius: 6px; padding: 9px 12px; font-size: 12.5px; margin-bottom: 16px; display: none;}
+        .empty-state { background: var(--panel); border: 1px dashed var(--line); border-radius: 10px; padding: 30px; text-align: center; color: var(--text-dim); font-size: 13px; }
+        /* Modal Detalhes da Etapa */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,30,50,.55); align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+        .modal-overlay.ativo { display: flex; }
+        .modal-box { width: 100%; max-width: 420px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 24px; box-shadow: 0 24px 60px rgba(10,30,50,.35); }
+        .modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+        .modal-etapa-nome { font-size: 16px; font-weight: 700; margin-top: 2px; }
+        .modal-close { background: none; border: none; font-size: 22px; line-height: 1; color: var(--text-dim); cursor: pointer; padding: 0 4px; }
+        .modal-close:hover { color: var(--red); }
+        .modal-body { display: flex; flex-direction: column; gap: 16px; }
+        .modal-progress-row { display: flex; align-items: center; gap: 16px; }
+        .modal-progress-slider { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--text-dim); font-family: var(--font-mono); }
+        .modal-progress-slider input[type="range"] { width: 100%; accent-color: var(--amber); }
+        .modal-status-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .modal-status-actions .btn.status-ativo { border-color: var(--cyan); color: var(--cyan); background: var(--panel-2); }
+        .btn-sm { padding: 5px 10px; font-size: 11.5px; flex-shrink: 0; }
+        .modal-datas { display: flex; flex-direction: column; gap: 8px; }
+        .modal-data-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; }
+        .modal-data-info { display: flex; flex-direction: column; gap: 2px; }
+        .modal-data-info .modal-data-label { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; color: var(--text-dim); }
+        .modal-data-info strong { font-size: 13px; }
+        .alerta-atraso { display: none; background: rgba(213,69,92,.12); border: 1px solid rgba(213,69,92,.35); color: var(--red); border-radius: 8px; padding: 10px 12px; font-size: 12.5px; line-height: 1.5; }
+        .modal-edit-data { display: none; flex-direction: column; gap: 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+        .modal-edit-data-titulo { font-size: 12.5px; font-weight: 600; }
+        .modal-edit-data label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--text-dim); font-family: var(--font-mono); }
+        .modal-edit-data input, .modal-edit-data textarea, .modal-edit-data select { font-family: var(--font-ui); font-size: 13px; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; resize: vertical; }
+        .modal-checkbox-group { display: flex; gap: 16px; flex-wrap: wrap; }
+        .modal-checkbox { flex-direction: row !important; align-items: center; gap: 7px !important; font-family: var(--font-ui) !important; font-size: 13px !important; color: var(--text) !important; text-transform: none; }
+        .modal-checkbox input { width: auto; accent-color: var(--cyan); }
+        .modal-edit-actions { display: flex; justify-content: flex-end; gap: 8px; }
+        .modal-tabs { display: none; gap: 8px; }
+        .modal-tab { flex: 1; font-family: var(--font-ui); font-size: 12px; font-weight: 600; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); color: var(--text-dim); cursor: pointer; }
+        .modal-tab.ativo { border-color: var(--cyan); color: var(--cyan); background: var(--panel); }
+        .modal-equip-info { display: none; font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; }
+        .modal-checklist { display: none; flex-direction: column; gap: 8px; }
+        .modal-checklist-titulo { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--text-dim); }
+        .modal-checklist-lista { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+        .modal-checklist-item { display: flex; align-items: center; gap: 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer; }
+        .modal-checklist-item input { width: auto; accent-color: var(--green); }
+        .modal-checklist-item.concluido { color: var(--text-dim); text-decoration: line-through; }
+        .modal-checklist-item:has(input:disabled) { cursor: not-allowed; opacity: .75; }
+        .modal-edit-data input:disabled, .modal-edit-data select:disabled { opacity: .6; cursor: not-allowed; }
+        .etapa-subtipos { display: flex; flex-direction: column; gap: 3px; font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
+        .etapa-subtipos strong { color: var(--text); font-weight: 600; }
+        .modal-historico { display: none; border-top: 1px solid var(--line); padding-top: 12px; }
+        .modal-historico-titulo { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
+        .historico-item { padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 12px; }
+        .historico-item:last-child { border-bottom: none; }
+        .historico-item-head { display: flex; justify-content: space-between; color: var(--text-dim); font-family: var(--font-mono); font-size: 10.5px; margin-bottom: 3px; }
+        .historico-item-datas { font-weight: 600; margin-bottom: 2px; }
+        .historico-item-motivo { color: var(--text-dim); }
+
+        /* ==========================================================================
+           SISTEMA SPA (Esconde as telas inativas)
+           ========================================================================== */
+        .tela { display: none; }
+        .tela.ativa { display: block; }
+        .tela.ativa.login-page { display: flex; }
+    </style>
+</head>
+<body>
+
+    <!-- MENÚ SUPERIOR GLOBAL -->
+    <div id="topbar-global" style="display: none;">
+        <div class="topbar">
+            <a class="brand" onclick="navegarPara('dashboard')">Segurança Eletrônica · Painel de Obras</a>
+            <nav class="topbar-nav">
+                <button class="nav-btn" id="nav-dashboard" onclick="navegarPara('dashboard')">Dashboard</button>
+                <button class="nav-btn" id="nav-clientes" onclick="navegarPara('clientes')">Clientes</button>
+                <button class="nav-btn nav-btn-primary" onclick="abrirNovoProjeto()">+ Novo projeto</button>
+                <button class="nav-btn" id="nav-config" onclick="navegarPara('configuracoes')" style="display:none;">Configurações</button>
+                
+                <details class="avatar-menu">
+                    <summary class="avatar-circle" id="topbar-iniciais">US</summary>
+                    <div class="avatar-dropdown">
+                        <div class="avatar-dropdown-nome" id="topbar-nome">Usuário</div>
+                        <div class="avatar-dropdown-perfil" id="topbar-perfil">Perfil</div>
+                        <hr class="avatar-dropdown-hr">
+                        <a class="avatar-dropdown-link" onclick="fazerLogout()">Sair</a>
+                    </div>
+                </details>
+            </nav>
+        </div>
+    </div>
+
+    <!-- TELA 1: LOGIN -->
+    <section id="tela-login" class="tela ativa login-page">
+        <div class="login-box">
+            <div class="login-brand">Segurança Eletrônica</div>
+            <div class="login-sub">Painel de Obras</div>
+            <div id="login-erro" class="login-erro">Usuário ou senha inválidos.</div>
+            
+            <form class="login-form" onsubmit="fazerLogin(event)">
+                <label>Usuário <input type="text" id="login-usuario" required autofocus></label>
+                <label>Senha <input type="password" id="login-senha" required></label>
+                <button class="btn btn-primary" type="submit" style="width: 100%;">Entrar</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- TELA 2: DASHBOARD -->
+    <section id="tela-dashboard" class="tela">
+        <div class="container">
+            <div class="section-title">Visão geral</div>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-value" id="dash-total">0</div><div class="stat-label">Total de obras</div></div>
+                <div class="stat-card"><div class="stat-value stat-amber" id="dash-andamento">0</div><div class="stat-label">Em andamento</div></div>
+                <div class="stat-card"><div class="stat-value stat-green" id="dash-concluidas">0</div><div class="stat-label">Concluídas</div></div>
+            </div>
+
+            <div class="section-title">Andamento dos projetos</div>
+            <div class="dash-grid" id="dash-grid-obras"></div>
+        </div>
+    </section>
+
+    <!-- TELA 3: DETALHE DA OBRA (KANBAN) -->
+    <section id="tela-obra" class="tela">
+        <div class="container">
+            <button class="btn" onclick="navegarPara('dashboard')" style="margin-bottom: 20px;">&larr; Voltar ao Dashboard</button>
+            
+            <div class="section-title" id="obra-titulo">Detalhes da Obra</div>
+            <div id="obra-cliente" style="color:#f0f7fd; opacity:.75; font-size:12.5px; margin: -8px 0 4px;"></div>
+
+            <div class="section-title">Fluxo da obra</div>
+            <div class="kanban" id="kanban-container"></div>
+            
+            <div class="section-title">Dispositivos da obra</div>
+            <table class="devices-table">
+                <thead><tr><th>Tipo</th><th>Modelo</th><th>Qtd.</th><th>Local</th><th>Status</th></tr></thead>
+                <tbody id="dispositivos-container"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- TELA 4: CONFIGURAÇÕES (USUÁRIOS) -->
+    <section id="tela-configuracoes" class="tela">
+        <div class="container">
+            <div class="section-title">Usuários cadastrados</div>
+            <table class="devices-table">
+                <thead><tr><th>Nome (login)</th><th>E-mail</th><th>Perfil</th><th>Status</th></tr></thead>
+                <tbody id="config-usuarios"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- TELA 5: CLIENTES -->
+    <section id="tela-clientes" class="tela">
+        <div class="container">
+            <div class="section-title">Clientes cadastrados</div>
+            <button class="btn btn-primary" onclick="abrirNovoCliente()" style="margin-bottom: 16px;">+ Novo cliente</button>
+            <table class="devices-table">
+                <thead><tr><th>Nome</th><th>Contato</th><th>Telefone</th><th>Obras</th></tr></thead>
+                <tbody id="clientes-lista"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- MODAL: NOVO PROJETO -->
+    <div id="modal-novo-projeto" class="modal-overlay" onclick="if(event.target === this) fecharNovoProjeto()">
+        <div class="modal-box">
+            <div class="modal-head">
+                <div>
+                    <div class="etapa-ordem">NOVO PROJETO</div>
+                    <div class="modal-etapa-nome">Cadastrar obra</div>
+                </div>
+                <button class="modal-close" onclick="fecharNovoProjeto()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-edit-data" style="display:flex;">
+                    <label>Nome do projeto <input type="text" id="np-nome" placeholder="Ex: CFTV Perimetral — Nome do local"></label>
+                    <label>Cliente <select id="np-cliente"></select></label>
+                    <div class="modal-edit-actions">
+                        <button class="btn" onclick="fecharNovoProjeto()">Cancelar</button>
+                        <button class="btn btn-primary" onclick="confirmarNovoProjeto()">Criar projeto</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: NOVO CLIENTE -->
+    <div id="modal-novo-cliente" class="modal-overlay" onclick="if(event.target === this) fecharNovoCliente()">
+        <div class="modal-box">
+            <div class="modal-head">
+                <div>
+                    <div class="etapa-ordem">NOVO CLIENTE</div>
+                    <div class="modal-etapa-nome">Cadastrar cliente</div>
+                </div>
+                <button class="modal-close" onclick="fecharNovoCliente()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-edit-data" style="display:flex;">
+                    <label>Nome <input type="text" id="nc-nome" placeholder="Nome do cliente/empresa"></label>
+                    <label>Contato (e-mail) <input type="email" id="nc-contato" placeholder="contato@empresa.com"></label>
+                    <label>Telefone <input type="text" id="nc-telefone" placeholder="(11) 90000-0000"></label>
+                    <div class="modal-edit-actions">
+                        <button class="btn" onclick="fecharNovoCliente()">Cancelar</button>
+                        <button class="btn btn-primary" onclick="confirmarNovoCliente()">Salvar cliente</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: DETALHES DA ETAPA -->
+    <div id="modal-etapa" class="modal-overlay" onclick="if(event.target === this) fecharDetalhesEtapa()">
+        <div class="modal-box">
+            <div class="modal-head">
+                <div>
+                    <div class="etapa-ordem" id="modal-etapa-ordem">ETAPA 01</div>
+                    <div class="modal-etapa-nome" id="modal-etapa-nome">Nome da etapa</div>
+                </div>
+                <button class="modal-close" onclick="fecharDetalhesEtapa()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-etapa-badge"></div>
+                <div class="alerta-atraso" id="modal-alerta-atraso">⚠ Etapa atrasada — a entrega prevista já passou. Defina uma nova data de entrega informando o motivo do atraso.</div>
+                <div class="etapa-desc" id="modal-etapa-desc"></div>
+
+                <div class="modal-edit-data" id="modal-levantamento" style="display:none;">
+                    <div class="modal-edit-data-titulo">Dados do levantamento técnico</div>
+                    <label>Responsável pelo levantamento <input type="text" id="lv-responsavel" placeholder="Nome de quem realizou"></label>
+                    <label>Tipo de instalação (marque um ou os dois)</label>
+                    <div class="modal-checkbox-group">
+                        <label class="modal-checkbox"><input type="checkbox" id="lv-tipo-controle" onchange="atualizarCamposQtdLevantamento()"> Controle de Acesso</label>
+                        <label class="modal-checkbox"><input type="checkbox" id="lv-tipo-cftv" onchange="atualizarCamposQtdLevantamento()"> CFTV</label>
+                    </div>
+                    <label id="lv-qtd-controle-wrap" style="display:none;">Qtd. de equipamentos — Controle de Acesso <input type="number" id="lv-qtd-controle" min="0" placeholder="0"></label>
+                    <label id="lv-qtd-cftv-wrap" style="display:none;">Qtd. de equipamentos — CFTV <input type="number" id="lv-qtd-cftv" min="0" placeholder="0"></label>
+                    <div class="modal-edit-actions">
+                        <button class="btn btn-primary" id="btn-salvar-levantamento" onclick="salvarDadosLevantamento()">Salvar dados</button>
+                    </div>
+                </div>
+
+                <div class="modal-tabs" id="modal-tabs"></div>
+                <div class="modal-equip-info" id="modal-equip-info"></div>
+                <div class="modal-checklist" id="modal-checklist">
+                    <div class="modal-checklist-titulo" id="modal-checklist-titulo">Equipamentos</div>
+                    <div class="modal-checklist-lista" id="modal-checklist-lista"></div>
+                </div>
+
+                <div class="modal-datas">
+                    <div class="modal-data-row">
+                        <div class="modal-data-info">
+                            <span class="modal-data-label">Início</span>
+                            <strong id="modal-etapa-data-inicio">Não definida</strong>
+                        </div>
+                        <button class="btn btn-sm" id="btn-editar-inicio" onclick="iniciarEdicaoData('inicio')">Editar</button>
+                    </div>
+                    <div class="modal-data-row">
+                        <div class="modal-data-info">
+                            <span class="modal-data-label">Entrega</span>
+                            <strong id="modal-etapa-data-entrega">Não definida</strong>
+                        </div>
+                        <button class="btn btn-sm" id="btn-editar-entrega" onclick="iniciarEdicaoData('entrega')">Editar</button>
+                    </div>
+                </div>
+
+                <div class="modal-edit-data" id="modal-edit-data">
+                    <div class="modal-edit-data-titulo" id="modal-edit-data-titulo">Editar data</div>
+                    <label>Nova data <input type="date" id="modal-edit-data-valor"></label>
+                    <label id="modal-edit-motivo-wrap" style="display:none;">Justificativa da alteração <textarea id="modal-edit-data-motivo" rows="2" placeholder="Explique o motivo da alteração"></textarea></label>
+                    <div class="modal-edit-actions">
+                        <button class="btn" onclick="cancelarEdicaoData()">Cancelar</button>
+                        <button class="btn btn-primary" onclick="confirmarEdicaoData()">Salvar</button>
+                    </div>
+                </div>
+
+                <div class="modal-progress-row">
+                    <div class="etapa-ring" id="modal-etapa-ring" style="width:64px;height:64px;">
+                        <div class="etapa-ring-inner" id="modal-etapa-ring-inner" style="width:48px;height:48px;font-size:12px;"></div>
+                    </div>
+                    <div class="modal-progress-slider" id="modal-progress-slider-wrap">
+                        <label for="modal-progress-slider">Progresso: <span id="modal-progress-valor">0</span>%</label>
+                        <input type="range" id="modal-progress-slider" min="0" max="100" step="5" oninput="atualizarProgressoEtapa(this.value)">
+                    </div>
+                </div>
+                <div class="modal-status-actions" id="modal-status-actions">
+                    <button class="btn" id="btn-status-pendente" onclick="definirStatusEtapa('pendente')">Pendente</button>
+                    <button class="btn" id="btn-status-andamento" onclick="definirStatusEtapa('em_andamento')">Em andamento</button>
+                    <button class="btn" id="btn-status-concluida" onclick="definirStatusEtapa('concluida')">Concluída</button>
+                </div>
+
+                <div class="modal-historico" id="modal-historico">
+                    <div class="modal-historico-titulo">Histórico de alterações de data</div>
+                    <div id="modal-historico-lista"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         JAVASCRIPT DA PÁGINA ÚNICA
+         ========================================================================== -->
+    <script>
+        // BANCO DE DADOS SIMULADO (Mocks)
+        const db = {
+            usuarios: [
+                { id: 1, nome: 'admin', senha: 'admin', email: 'admin@empresa.com', perfil: 'admin', ativo: 'Ativo' },
+                { id: 2, nome: 'Bruno Tavares', senha: '123', email: 'bruno@empresa.com', perfil: 'tecnico', ativo: 'Ativo' },
+                { id: 3, nome: 'Camila Nogueira', senha: '123', email: 'camila@empresa.com', perfil: 'gestor', ativo: 'Ativo' }
+            ],
+            clientes: [
+                { id: 1, nome: 'Condomínio Jardins Ville', contato: 'sindico@jardinsville.com.br', telefone: '(11) 98888-1234' },
+                { id: 2, nome: 'Shopping Vale Norte', contato: 'facilities@valenorte.com.br', telefone: '(11) 97777-5678' }
+            ],
+            obras: [
+                {
+                    id: 1, nome: 'Controle de Acesso — Portaria Jardins Ville', clienteId: 1, status: 'em_andamento', progresso: 65,
+                    etapaAtual: 'Passagem de Infraestrutura', ultimoDisp: 'Catraca — Topdata Ntron',
+                    dispositivos: [
+                        { tipo: 'Catraca', modelo: 'Topdata Ntron', qtd: 2, local: 'Portaria', status: 'em_instalacao' }
+                    ],
+                    etapas: [
+                        { ordem: '01', nome: 'Levantamento Técnico', status: 'concluida', pct: 100, cor: 'var(--green)', icone: '✓', desc: 'Vistoria inicial e viabilidade', dataInicio: '2026-06-20', dataEntrega: '2026-06-24', historico: [], formularioLevantamento: true, dadosLevantamento: { responsavel: 'Bruno Tavares', tipos: ['controle_acesso'], qtdPorTipo: { controle_acesso: 8, cftv: null } } },
+                        { ordem: '02', nome: 'Passagem de Infraestrutura', desc: 'Eletrodutos e canaletas', dataInicio: '2026-07-25', dataEntrega: '2026-08-25', historico: [], porTipo: { controle_acesso: { equipamentos: [
+                            { nome: 'Equipamento 1', concluido: true }, { nome: 'Equipamento 2', concluido: true }, { nome: 'Equipamento 3', concluido: true }, { nome: 'Equipamento 4', concluido: true },
+                            { nome: 'Equipamento 5', concluido: false }, { nome: 'Equipamento 6', concluido: false }, { nome: 'Equipamento 7', concluido: false }, { nome: 'Equipamento 8', concluido: false }
+                        ] } } },
+                        { ordem: '03', nome: 'Passagem de Cabo', desc: 'Lançamento de cabos', dataInicio: null, dataEntrega: '2026-08-10', historico: [], porTipo: { controle_acesso: { equipamentos: Array.from({ length: 8 }, (_, i) => ({ nome: `Equipamento ${i + 1}`, concluido: false })) } } },
+                        { ordem: '04', nome: 'Certificação de Cabo', desc: 'Testes de certificação e continuidade dos cabos lançados', dataInicio: null, dataEntrega: '2026-09-12', historico: [], porTipo: { controle_acesso: { equipamentos: Array.from({ length: 8 }, (_, i) => ({ nome: `Equipamento ${i + 1}`, concluido: false })) } } },
+                        { ordem: '05', nome: 'Instalação Física', desc: 'Fixação e montagem dos equipamentos em campo', dataInicio: null, dataEntrega: '2026-09-26', historico: [], porTipo: { controle_acesso: { equipamentos: Array.from({ length: 8 }, (_, i) => ({ nome: `Equipamento ${i + 1}`, concluido: false })) } } },
+                        { ordem: '06', nome: 'Configuração do Equipamento', desc: 'Configuração de fábrica e parametrização dos dispositivos', dataInicio: null, dataEntrega: '2026-10-05', historico: [], porTipo: { controle_acesso: { equipamentos: Array.from({ length: 8 }, (_, i) => ({ nome: `Equipamento ${i + 1}`, concluido: false })) } } },
+                        { ordem: '07', nome: 'Configuração Lógica', desc: 'Integração lógica com o sistema de gestão e regras de acesso', dataInicio: null, dataEntrega: '2026-10-15', historico: [], porTipo: { controle_acesso: { equipamentos: Array.from({ length: 8 }, (_, i) => ({ nome: `Equipamento ${i + 1}`, concluido: false })) } } },
+                        { ordem: '08', nome: 'Teste em Produção', desc: 'Testes funcionais dos equipamentos em ambiente real', dataInicio: null, dataEntrega: '2026-10-22', historico: [], porTipo: { controle_acesso: { equipamentos: Array.from({ length: 8 }, (_, i) => ({ nome: `Equipamento ${i + 1}`, concluido: false })) } } },
+                        { ordem: '09', nome: 'Validação Supervisor', status: 'pendente', pct: 0, cor: 'var(--text-dim)', icone: '—', desc: 'Aprovação técnica do supervisor responsável', dataInicio: null, dataEntrega: '2026-10-26', historico: [] },
+                        { ordem: '10', nome: 'Validação Gerência', status: 'pendente', pct: 0, cor: 'var(--text-dim)', icone: '—', desc: 'Aprovação final da gerência do projeto', dataInicio: null, dataEntrega: '2026-10-30', historico: [] }
+                    ]
+                },
+                {
+                    id: 2, nome: 'CFTV Perimetral — Shopping Vale Norte', clienteId: 2, status: 'nao_iniciada', progresso: 0,
+                    etapaAtual: 'Levantamento Técnico', ultimoDisp: 'Nenhum equipamento',
+                    dispositivos: [],
+                    etapas: [
+                        { ordem: '01', nome: 'Levantamento Técnico', status: 'pendente', pct: 0, cor: 'var(--text-dim)', icone: '—', desc: 'Vistoria inicial e viabilidade', dataInicio: null, dataEntrega: '2026-09-05', historico: [], formularioLevantamento: true, dadosLevantamento: { responsavel: '', tipos: [], qtdPorTipo: { controle_acesso: null, cftv: null } } }
+                    ]
+                }
+            ]
+        };
+
+        // ROTEADOR SPA (Controla qual tela aparece)
+        function navegarPara(idTela, params = null) {
+            // Esconde todas as telas
+            document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+            
+            // Gerencia a Topbar (some no login, aparece no resto)
+            const topbar = document.getElementById('topbar-global');
+            if(idTela === 'login') {
+                topbar.style.display = 'none';
+            } else {
+                topbar.style.display = 'block';
+                atualizarBotoesTopbar(idTela);
+            }
+
+            // Exibe a tela alvo e dispara a renderização de dados
+            document.getElementById(`tela-${idTela}`).classList.add('ativa');
+            
+            if (idTela === 'dashboard') renderDashboard();
+            if (idTela === 'obra') renderObra(params);
+            if (idTela === 'configuracoes') renderConfiguracoes();
+            if (idTela === 'clientes') renderClientes();
+        }
+
+        function nomeCliente(clienteId) {
+            const cliente = db.clientes.find(c => c.id === clienteId);
+            return cliente ? cliente.nome : 'Não vinculado';
+        }
+
+        // FUNÇÕES DE AUTENTICAÇÃO
+        function fazerLogin(event) {
+            event.preventDefault();
+            const usr = document.getElementById('login-usuario').value;
+            const sen = document.getElementById('login-senha').value;
+            const erro = document.getElementById('login-erro');
+
+            const usuarioLogado = db.usuarios.find(u => u.nome === usr && u.senha === sen);
+            
+            if (usuarioLogado) {
+                localStorage.setItem('sessionUser', JSON.stringify(usuarioLogado));
+                erro.style.display = 'none';
+                configurarSessao(usuarioLogado);
+                navegarPara('dashboard');
+            } else {
+                erro.style.display = 'block';
+            }
+        }
+
+        function fazerLogout() {
+            localStorage.removeItem('sessionUser');
+            document.getElementById('login-usuario').value = '';
+            document.getElementById('login-senha').value = '';
+            navegarPara('login');
+        }
+
+        function configurarSessao(user) {
+            // Iniciais
+            const partes = user.nome.trim().split(/\s+/);
+            const iniciais = partes.length <= 1 ? user.nome.substring(0, 2) : partes[0][0] + partes[partes.length - 1][0];
+            document.getElementById('topbar-iniciais').textContent = iniciais.toUpperCase();
+            
+            // Dados
+            document.getElementById('topbar-nome').textContent = user.nome;
+            document.getElementById('topbar-perfil').textContent = user.perfil === 'admin' ? 'Administrador' : (user.perfil === 'gestor' ? 'Gestor' : 'Técnico');
+            
+            // Menu de config só para admin
+            document.getElementById('nav-config').style.display = user.perfil === 'admin' ? 'block' : 'none';
+        }
+
+        function atualizarBotoesTopbar(telaAtual) {
+            document.getElementById('nav-dashboard').classList.toggle('active', telaAtual === 'dashboard');
+            document.getElementById('nav-clientes').classList.toggle('active', telaAtual === 'clientes');
+            document.getElementById('nav-config').classList.toggle('active', telaAtual === 'configuracoes');
+            // Fecha dropdown ao clicar fora
+            document.querySelectorAll('.avatar-menu[open]').forEach(menu => menu.removeAttribute('open'));
+        }
+
+        // RENDERIZAÇÃO: DASHBOARD
+        function renderDashboard() {
+            document.getElementById('dash-total').textContent = db.obras.length;
+            document.getElementById('dash-andamento').textContent = db.obras.filter(o => o.status === 'em_andamento').length;
+            document.getElementById('dash-concluidas').textContent = db.obras.filter(o => o.status === 'concluida').length;
+
+            const grid = document.getElementById('dash-grid-obras');
+            grid.innerHTML = '';
+            
+            db.obras.forEach(o => {
+                const cor = o.status === 'em_andamento' ? 'var(--amber)' : 'var(--text-dim)';
+                const badge = o.status === 'em_andamento' ? 'status-andamento' : 'status-pendente';
+                const label = o.status === 'em_andamento' ? 'Em andamento' : 'Não iniciada';
+
+                grid.innerHTML += `
+                <div class="dash-card" onclick="navegarPara('obra', ${o.id})">
+                    <div class="dash-card-ring" style="--pct:${o.progresso}; --ring-color:${cor};">
+                        <div class="dash-card-ring-inner">${o.progresso}%</div>
+                    </div>
+                    <div class="dash-card-info">
+                        <div class="dash-card-head">
+                            <span class="badge ${badge}">${label}</span>
+                            <span style="font-family: monospace; color: var(--text-dim);">#${o.id}</span>
+                        </div>
+                        <div class="dash-card-nome">${o.nome}</div>
+                        <div class="dash-card-linha"><span class="dash-card-label">Cliente</span><span class="dash-card-valor">${nomeCliente(o.clienteId)}</span></div>
+                        <div class="dash-card-linha"><span class="dash-card-label">Etapa atual</span><span class="dash-card-valor">${o.etapaAtual}</span></div>
+                        <div class="dash-card-linha"><span class="dash-card-label">Último disp.</span><span class="dash-card-valor">${o.ultimoDisp}</span></div>
+                    </div>
+                </div>`;
+            });
+        }
+
+        // RENDERIZAÇÃO: DETALHES DA OBRA (KANBAN)
+        function renderObra(obraId) {
+            const obra = db.obras.find(o => o.id === obraId);
+            document.getElementById('obra-titulo').innerHTML = `Fluxo da Obra: <span style="color:var(--amber)">${obra.nome}</span>`;
+            document.getElementById('obra-cliente').textContent = `Cliente: ${nomeCliente(obra.clienteId)}`;
+
+            const kanban = document.getElementById('kanban-container');
+            kanban.innerHTML = '';
+            
+            obra.etapas.forEach(e => {
+                const est = obterEstadoExibicao(e);
+                let statusBadge = est.status === 'concluida' ? '<span class="badge status-concluida">Concluída</span>' :
+                                 (est.status === 'em_andamento' ? '<span class="badge status-andamento">Em andamento</span>' : '<span class="badge status-pendente">Pendente</span>');
+                const atrasada = isEtapaAtrasada(e);
+                const subtiposResumo = e.porTipo
+                    ? `<div class="etapa-subtipos">${Object.entries(e.porTipo).map(([tipo, sub]) => {
+                        const p = calcularProgressoTipo(sub);
+                        return `<span>${TIPO_LABEL[tipo]}: <strong>${p.status === 'concluida' ? 'Concluída' : p.pct + '%'}</strong></span>`;
+                    }).join('')}</div>`
+                    : '';
+                kanban.innerHTML += `
+                <div class="etapa-col ${atrasada ? 'etapa-col-atrasada' : ''}">
+                    <div class="etapa-col-head">
+                        <div>
+                            <div class="etapa-ordem">ETAPA ${e.ordem}</div>
+                            <div class="etapa-nome">${e.nome}</div>
+                        </div>
+                        <div class="etapa-ring" style="--pct:${est.pct}; --ring-color:${est.cor};">
+                            <div class="etapa-ring-inner">${est.icone}</div>
+                        </div>
+                    </div>
+                    <div class="etapa-col-body">
+                        ${statusBadge}${atrasada ? ' <span class="badge status-atrasada">Atrasada</span>' : ''}
+                        <div class="etapa-desc">${e.desc}</div>
+                        ${subtiposResumo}
+                        <div class="etapa-datas">
+                            <span>Início: <strong>${formatarDataBR(e.dataInicio)}</strong></span>
+                            <span>Entrega: <strong>${formatarDataBR(e.dataEntrega)}</strong></span>
+                        </div>
+                        <button class="btn" style="margin-top:auto;" onclick="abrirDetalhesEtapa(${obra.id}, '${e.ordem}')">Detalhes da Etapa</button>
+                    </div>
+                </div>`;
+            });
+
+            const dispTable = document.getElementById('dispositivos-container');
+            dispTable.innerHTML = '';
+            if(obra.dispositivos.length === 0) dispTable.innerHTML = '<tr><td colspan="5">Nenhum dispositivo</td></tr>';
+            obra.dispositivos.forEach(d => {
+                dispTable.innerHTML += `<tr><td>${d.tipo}</td><td>${d.modelo}</td><td>${d.qtd}</td><td>${d.local}</td><td>${d.status}</td></tr>`;
+            });
+        }
+
+        // DATAS: FORMATAÇÃO E DETECÇÃO DE ATRASO
+        function formatarDataBR(iso) {
+            if (!iso) return 'Não definida';
+            const [aaaa, mm, dd] = iso.split('-');
+            return `${dd}/${mm}/${aaaa}`;
+        }
+
+        // Data de início/entrega é única por etapa (vale para o cliente inteiro, não por tipo).
+        function isEtapaAtrasada(etapa) {
+            const status = obterEstadoExibicao(etapa).status;
+            if (status === 'concluida' || !etapa.dataEntrega) return false;
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            const entrega = new Date(`${etapa.dataEntrega}T00:00:00`);
+            return entrega < hoje;
+        }
+
+        // Progresso de um sub-registro por tipo: calculado a partir de quantos equipamentos
+        // da checklist já foram marcados como concluídos (não é mais definido manualmente).
+        function calcularProgressoTipo(sub) {
+            const total = sub.equipamentos.length;
+            const feitos = sub.equipamentos.filter(eq => eq.concluido).length;
+            const pct = total > 0 ? Math.round((feitos / total) * 100) : 0;
+            const status = (total === 0 || feitos === 0) ? 'pendente' : (feitos === total ? 'concluida' : 'em_andamento');
+            const cor = status === 'concluida' ? 'var(--green)' : (status === 'em_andamento' ? 'var(--amber)' : 'var(--text-dim)');
+            const icone = status === 'concluida' ? '✓' : (status === 'em_andamento' ? `${pct}%` : '—');
+            return { status, pct, cor, icone };
+        }
+
+        // Estado agregado (status/pct/cor/ícone) de uma etapa: direto para etapas simples,
+        // combinado a partir do progresso de checklist de cada tipo para etapas com porTipo.
+        function obterEstadoExibicao(etapa) {
+            if (!etapa.porTipo) return { status: etapa.status, pct: etapa.pct, cor: etapa.cor, icone: etapa.icone };
+            const subs = Object.values(etapa.porTipo).map(calcularProgressoTipo);
+            const todasConcluidas = subs.every(s => s.status === 'concluida');
+            const algumaAtiva = subs.some(s => s.status !== 'pendente');
+            const status = todasConcluidas ? 'concluida' : (algumaAtiva ? 'em_andamento' : 'pendente');
+            const pct = Math.round(subs.reduce((acc, s) => acc + s.pct, 0) / subs.length);
+            const cor = status === 'concluida' ? 'var(--green)' : (status === 'em_andamento' ? 'var(--amber)' : 'var(--text-dim)');
+            const icone = status === 'concluida' ? '✓' : (status === 'em_andamento' ? `${pct}%` : '—');
+            return { status, pct, cor, icone };
+        }
+
+        // MODAL: DETALHES DA ETAPA
+        let modalEtapaCtx = null;
+        let edicaoDataCampo = null;
+        let abaAtivaTipo = null;
+
+        function getObraAtual() {
+            return modalEtapaCtx ? db.obras.find(o => o.id === modalEtapaCtx.obraId) : null;
+        }
+
+        function getEtapaAtual() {
+            const obra = getObraAtual();
+            return obra ? obra.etapas.find(e => e.ordem === modalEtapaCtx.ordem) : null;
+        }
+
+        function abrirDetalhesEtapa(obraId, ordem) {
+            const obra = db.obras.find(o => o.id === obraId);
+            const etapa = obra.etapas.find(e => e.ordem === ordem);
+            modalEtapaCtx = { obraId, ordem };
+            abaAtivaTipo = etapa.porTipo ? Object.keys(etapa.porTipo)[0] : null;
+            cancelarEdicaoData();
+            renderModalEtapa(etapa);
+            document.getElementById('modal-etapa').classList.add('ativo');
+        }
+
+        function fecharDetalhesEtapa() {
+            document.getElementById('modal-etapa').classList.remove('ativo');
+            modalEtapaCtx = null;
+        }
+
+        function selecionarAbaTipo(tipo) {
+            abaAtivaTipo = tipo;
+            cancelarEdicaoData();
+            renderModalEtapa(getEtapaAtual());
+        }
+
+        function renderModalEtapa(etapa) {
+            document.getElementById('modal-etapa-ordem').textContent = `ETAPA ${etapa.ordem}`;
+            document.getElementById('modal-etapa-nome').textContent = etapa.nome;
+            document.getElementById('modal-etapa-desc').textContent = etapa.desc;
+
+            const tabsWrap = document.getElementById('modal-tabs');
+            const equipInfo = document.getElementById('modal-equip-info');
+            const checklistWrap = document.getElementById('modal-checklist');
+            const sliderWrap = document.getElementById('modal-progress-slider-wrap');
+            const statusActions = document.getElementById('modal-status-actions');
+
+            const levantamento = getObraAtual().etapas[0];
+            const dadosLv = levantamento.dadosLevantamento || {};
+            const tiposRegistrados = dadosLv.tipos || [];
+            const qtdPorTipo = dadosLv.qtdPorTipo || {};
+
+            let est;
+
+            if (etapa.porTipo) {
+                const tiposDisponiveis = Object.keys(etapa.porTipo);
+                if (!abaAtivaTipo || !tiposDisponiveis.includes(abaAtivaTipo)) abaAtivaTipo = tiposDisponiveis[0];
+
+                tabsWrap.style.display = 'flex';
+                tabsWrap.innerHTML = tiposDisponiveis.map(tipo =>
+                    `<button type="button" class="modal-tab ${tipo === abaAtivaTipo ? 'ativo' : ''}" onclick="selecionarAbaTipo('${tipo}')">${TIPO_LABEL[tipo]}</button>`
+                ).join('');
+
+                const sub = etapa.porTipo[abaAtivaTipo];
+                est = calcularProgressoTipo(sub);
+                const feitos = sub.equipamentos.filter(eq => eq.concluido).length;
+
+                const tipoBloqueado = est.status === 'concluida';
+                equipInfo.style.display = 'none';
+                checklistWrap.style.display = 'flex';
+                document.getElementById('modal-checklist-titulo').textContent = `Equipamentos — ${TIPO_LABEL[abaAtivaTipo]} (${feitos}/${sub.equipamentos.length} concluídos)${tipoBloqueado ? ' — concluído, bloqueado para edição' : ''}`;
+                document.getElementById('modal-checklist-lista').innerHTML = sub.equipamentos.length
+                    ? sub.equipamentos.map((eq, i) => `
+                        <label class="modal-checklist-item ${eq.concluido ? 'concluido' : ''}">
+                            <input type="checkbox" ${eq.concluido ? 'checked' : ''} ${tipoBloqueado ? 'disabled' : ''} onchange="alternarEquipamentoConcluido('${abaAtivaTipo}', ${i})">
+                            ${eq.nome}
+                        </label>
+                    `).join('')
+                    : '<div class="etapa-desc">Nenhum equipamento registrado para este tipo.</div>';
+
+                sliderWrap.style.display = 'none';
+                statusActions.style.display = 'none';
+            } else {
+                abaAtivaTipo = null;
+                tabsWrap.style.display = 'none';
+                tabsWrap.innerHTML = '';
+                checklistWrap.style.display = 'none';
+                statusActions.style.display = 'grid';
+
+                est = { status: etapa.status, pct: etapa.pct, cor: etapa.cor, icone: etapa.icone };
+
+                if (!etapa.formularioLevantamento && tiposRegistrados.length > 0) {
+                    equipInfo.style.display = 'block';
+                    equipInfo.textContent = 'Equipamentos registrados: ' + tiposRegistrados.map(tipo =>
+                        `${TIPO_LABEL[tipo]}: ${qtdPorTipo[tipo] != null ? qtdPorTipo[tipo] : 'não informado'}`
+                    ).join('  ·  ');
+                } else {
+                    equipInfo.style.display = 'none';
+                }
+
+                if (etapa.status === 'em_andamento') {
+                    sliderWrap.style.display = 'flex';
+                    document.getElementById('modal-progress-slider').value = etapa.pct;
+                    document.getElementById('modal-progress-valor').textContent = etapa.pct;
+                } else {
+                    sliderWrap.style.display = 'none';
+                }
+
+                document.getElementById('btn-status-pendente').classList.toggle('status-ativo', etapa.status === 'pendente');
+                document.getElementById('btn-status-andamento').classList.toggle('status-ativo', etapa.status === 'em_andamento');
+                document.getElementById('btn-status-concluida').classList.toggle('status-ativo', etapa.status === 'concluida');
+            }
+
+            // Data de início/entrega é única por etapa — vale para todos os tipos, não muda por aba.
+            document.getElementById('modal-etapa-data-inicio').textContent = formatarDataBR(etapa.dataInicio);
+            document.getElementById('modal-etapa-data-entrega').textContent = formatarDataBR(etapa.dataEntrega);
+
+            // Etapa concluída (em todos os tipos, se aplicável) não pode mais ser alterada.
+            const etapaConcluida = obterEstadoExibicao(etapa).status === 'concluida';
+            document.getElementById('btn-editar-inicio').disabled = etapaConcluida;
+            document.getElementById('btn-editar-entrega').disabled = etapaConcluida;
+
+            const atrasada = isEtapaAtrasada(etapa);
+            const badgeHtml = est.status === 'concluida' ? '<span class="badge status-concluida">Concluída</span>' :
+                             (est.status === 'em_andamento' ? '<span class="badge status-andamento">Em andamento</span>' : '<span class="badge status-pendente">Pendente</span>');
+            document.getElementById('modal-etapa-badge').innerHTML = badgeHtml + (atrasada ? ' <span class="badge status-atrasada">Atrasada</span>' : '');
+            document.getElementById('modal-alerta-atraso').style.display = atrasada ? 'block' : 'none';
+
+            const ring = document.getElementById('modal-etapa-ring');
+            ring.style.setProperty('--pct', est.pct);
+            ring.style.setProperty('--ring-color', est.cor);
+            const ringInner = document.getElementById('modal-etapa-ring-inner');
+            ringInner.textContent = est.icone;
+            ringInner.style.color = est.cor;
+
+            const lvWrap = document.getElementById('modal-levantamento');
+            if (etapa.formularioLevantamento) {
+                lvWrap.style.display = 'flex';
+                const dados = etapa.dadosLevantamento || {};
+                const qtdPorTipo = dados.qtdPorTipo || {};
+                document.getElementById('lv-responsavel').value = dados.responsavel || '';
+                const tipos = dados.tipos || [];
+                document.getElementById('lv-tipo-controle').checked = tipos.includes('controle_acesso');
+                document.getElementById('lv-tipo-cftv').checked = tipos.includes('cftv');
+                document.getElementById('lv-qtd-controle').value = qtdPorTipo.controle_acesso != null ? qtdPorTipo.controle_acesso : '';
+                document.getElementById('lv-qtd-cftv').value = qtdPorTipo.cftv != null ? qtdPorTipo.cftv : '';
+                atualizarCamposQtdLevantamento();
+
+                const lvBloqueado = etapa.status === 'concluida';
+                ['lv-responsavel', 'lv-tipo-controle', 'lv-tipo-cftv', 'lv-qtd-controle', 'lv-qtd-cftv'].forEach(id => {
+                    document.getElementById(id).disabled = lvBloqueado;
+                });
+                document.getElementById('btn-salvar-levantamento').disabled = lvBloqueado;
+            } else {
+                lvWrap.style.display = 'none';
+            }
+
+            renderHistoricoEtapa(etapa);
+        }
+
+        function alternarEquipamentoConcluido(tipo, index) {
+            const etapa = getEtapaAtual();
+            if (!etapa || !etapa.porTipo || !etapa.porTipo[tipo]) return;
+            const sub = etapa.porTipo[tipo];
+            if (calcularProgressoTipo(sub).status === 'concluida') return; // já concluído, bloqueado
+            sub.equipamentos[index].concluido = !sub.equipamentos[index].concluido;
+            renderModalEtapa(etapa);
+            renderObra(modalEtapaCtx.obraId);
+        }
+
+        // Mostra/esconde o campo de quantidade de equipamentos de cada tipo conforme os checkboxes marcados
+        function atualizarCamposQtdLevantamento() {
+            document.getElementById('lv-qtd-controle-wrap').style.display = document.getElementById('lv-tipo-controle').checked ? 'flex' : 'none';
+            document.getElementById('lv-qtd-cftv-wrap').style.display = document.getElementById('lv-tipo-cftv').checked ? 'flex' : 'none';
+        }
+
+        // ETAPAS PADRÃO POSTERIORES AO LEVANTAMENTO (por tipo + gerais únicas)
+        // Todas estas rastreiam progresso/datas separados por tipo (abas), igual à Instalação Física
+        const ETAPAS_POR_TIPO = [
+            { nome: 'Passagem de Infraestrutura', desc: 'Eletrodutos e canaletas' },
+            { nome: 'Passagem de Cabo', desc: 'Lançamento de cabos' },
+            { nome: 'Certificação de Cabo', desc: 'Testes de certificação e continuidade dos cabos lançados' },
+            { nome: 'Instalação Física', desc: 'Fixação e montagem dos equipamentos em campo' },
+            { nome: 'Configuração do Equipamento', desc: 'Configuração de fábrica e parametrização dos dispositivos' },
+            { nome: 'Configuração Lógica', desc: 'Integração lógica com o sistema de gestão e regras de acesso' },
+            { nome: 'Teste em Produção', desc: 'Testes funcionais dos equipamentos em ambiente real' }
+        ];
+        const ETAPAS_GERAIS_FIM = [
+            { nome: 'Validação Supervisor', desc: 'Aprovação técnica do supervisor responsável' },
+            { nome: 'Validação Gerência', desc: 'Aprovação final da gerência do projeto' }
+        ];
+        const TIPO_LABEL = { controle_acesso: 'Controle de Acesso', cftv: 'CFTV' };
+
+        function criarEtapaSimples(nome, desc) {
+            return { nome, desc, status: 'pendente', pct: 0, cor: 'var(--text-dim)', icone: '—', dataInicio: null, dataEntrega: null, historico: [] };
+        }
+
+        // Checklist de equipamentos de um tipo: um item por unidade registrada no levantamento.
+        function criarChecklistEquipamentos(qtd) {
+            return { equipamentos: Array.from({ length: qtd }, (_, i) => ({ nome: `Equipamento ${i + 1}`, concluido: false })) };
+        }
+
+        // Regera as etapas após o Levantamento Técnico com base no(s) tipo(s) marcados.
+        // As etapas de execução (ETAPAS_POR_TIPO) continuam sendo um único card cada, com uma
+        // data de início/entrega única, mas ganham uma checklist de equipamentos por tipo (abas)
+        // cujo progresso é calculado a partir do que foi marcado como concluído.
+        // Só as validações finais permanecem como etapa simples (uma aprovação só, sem distinção de tipo).
+        // Checklists e datas já existentes com o mesmo nome/tipo/quantidade são preservadas.
+        function reconstruirEtapasObra(obra) {
+            const etapaLevantamento = obra.etapas[0];
+            const dadosLv = etapaLevantamento.dadosLevantamento || {};
+            const tipos = dadosLv.tipos || [];
+            const qtdPorTipo = dadosLv.qtdPorTipo || {};
+            const antigas = obra.etapas.slice(1);
+            const buscarAntiga = (nome) => antigas.find(e => e.nome === nome);
+
+            const novas = [etapaLevantamento];
+
+            ETAPAS_POR_TIPO.forEach(t => {
+                const existente = buscarAntiga(t.nome);
+                const porTipo = {};
+                tipos.forEach(tipo => {
+                    const qtd = qtdPorTipo[tipo] || 0;
+                    const subExistente = existente && existente.porTipo && existente.porTipo[tipo];
+                    porTipo[tipo] = (subExistente && subExistente.equipamentos.length === qtd) ? subExistente : criarChecklistEquipamentos(qtd);
+                });
+                novas.push({
+                    nome: t.nome,
+                    desc: t.desc,
+                    dataInicio: existente ? existente.dataInicio : null,
+                    dataEntrega: existente ? existente.dataEntrega : null,
+                    historico: existente ? existente.historico : [],
+                    porTipo
+                });
+            });
+
+            ETAPAS_GERAIS_FIM.forEach(t => {
+                novas.push(buscarAntiga(t.nome) || criarEtapaSimples(t.nome, t.desc));
+            });
+
+            novas.forEach((e, i) => { e.ordem = String(i + 1).padStart(2, '0'); });
+
+            obra.etapas = novas;
+            modalEtapaCtx.ordem = etapaLevantamento.ordem;
+        }
+
+        function salvarDadosLevantamento() {
+            if (!modalEtapaCtx) return;
+            const obra = db.obras.find(o => o.id === modalEtapaCtx.obraId);
+            const etapa = obra.etapas.find(e => e.ordem === modalEtapaCtx.ordem);
+
+            if (etapa.status === 'concluida') {
+                alert('Esta etapa já foi concluída e não pode mais ser alterada.');
+                return;
+            }
+
+            const responsavel = document.getElementById('lv-responsavel').value.trim();
+            const tipos = [];
+            if (document.getElementById('lv-tipo-controle').checked) tipos.push('controle_acesso');
+            if (document.getElementById('lv-tipo-cftv').checked) tipos.push('cftv');
+
+            if (!responsavel || tipos.length === 0) {
+                alert('Preencha o responsável e selecione ao menos um tipo de instalação.');
+                return;
+            }
+
+            const qtdPorTipo = { controle_acesso: null, cftv: null };
+            if (tipos.includes('controle_acesso')) {
+                const v = document.getElementById('lv-qtd-controle').value;
+                if (!v) { alert('Informe a quantidade de equipamentos de Controle de Acesso.'); return; }
+                qtdPorTipo.controle_acesso = Number(v);
+            }
+            if (tipos.includes('cftv')) {
+                const v = document.getElementById('lv-qtd-cftv').value;
+                if (!v) { alert('Informe a quantidade de equipamentos de CFTV.'); return; }
+                qtdPorTipo.cftv = Number(v);
+            }
+
+            etapa.dadosLevantamento = { responsavel, tipos, qtdPorTipo };
+            reconstruirEtapasObra(obra);
+
+            renderModalEtapa(etapa);
+            renderObra(obra.id);
+            alert('Dados salvos. As etapas seguintes foram atualizadas conforme o(s) tipo(s) selecionado(s).');
+        }
+
+        function renderHistoricoEtapa(etapa) {
+            const wrap = document.getElementById('modal-historico');
+            const lista = document.getElementById('modal-historico-lista');
+            if (!etapa.historico || etapa.historico.length === 0) {
+                wrap.style.display = 'none';
+                lista.innerHTML = '';
+                return;
+            }
+            wrap.style.display = 'block';
+            lista.innerHTML = etapa.historico.map(h => `
+                <div class="historico-item">
+                    <div class="historico-item-head"><strong>${h.campo}</strong><span>${h.quando}</span></div>
+                    <div class="historico-item-datas">${h.de} &rarr; ${h.para}</div>
+                    <div class="historico-item-motivo">${h.motivo}</div>
+                </div>
+            `).join('');
+        }
+
+        // EDIÇÃO DE DATAS (COM JUSTIFICATIVA QUANDO JÁ DEFINIDAS)
+        // Data de início/entrega é única por etapa (independe da aba de tipo selecionada).
+        function iniciarEdicaoData(campo) {
+            const etapa = getEtapaAtual();
+            if (!etapa) return;
+            if (obterEstadoExibicao(etapa).status === 'concluida') {
+                alert('Esta etapa já foi concluída e não pode mais ser alterada.');
+                return;
+            }
+            const valorAtual = campo === 'inicio' ? etapa.dataInicio : etapa.dataEntrega;
+
+            edicaoDataCampo = campo;
+            document.getElementById('modal-edit-data-titulo').textContent = campo === 'inicio' ? 'Editar data de início' : 'Editar data de entrega';
+            document.getElementById('modal-edit-data-valor').value = valorAtual || '';
+            document.getElementById('modal-edit-data-motivo').value = '';
+            document.getElementById('modal-edit-motivo-wrap').style.display = valorAtual ? 'flex' : 'none';
+            document.getElementById('modal-edit-data').style.display = 'flex';
+        }
+
+        function cancelarEdicaoData() {
+            edicaoDataCampo = null;
+            const form = document.getElementById('modal-edit-data');
+            if (form) form.style.display = 'none';
+        }
+
+        function confirmarEdicaoData() {
+            if (!edicaoDataCampo) return;
+            const etapa = getEtapaAtual();
+            if (!etapa) return;
+            const campo = edicaoDataCampo;
+            const valorAnterior = campo === 'inicio' ? etapa.dataInicio : etapa.dataEntrega;
+            const novoValor = document.getElementById('modal-edit-data-valor').value;
+            const motivo = document.getElementById('modal-edit-data-motivo').value.trim();
+
+            if (!novoValor) { alert('Selecione uma data válida.'); return; }
+
+            const exigeMotivo = !!valorAnterior;
+            if (exigeMotivo && !motivo) {
+                alert('Essa data já foi definida antes. Informe uma justificativa para alterá-la.');
+                return;
+            }
+
+            if (exigeMotivo) {
+                if (!etapa.historico) etapa.historico = [];
+                etapa.historico.unshift({
+                    campo: campo === 'inicio' ? 'Data de início' : 'Data de entrega',
+                    de: formatarDataBR(valorAnterior),
+                    para: formatarDataBR(novoValor),
+                    motivo,
+                    quando: new Date().toLocaleString('pt-BR')
+                });
+            }
+
+            if (campo === 'inicio') etapa.dataInicio = novoValor;
+            else etapa.dataEntrega = novoValor;
+
+            cancelarEdicaoData();
+            renderModalEtapa(etapa);
+            renderObra(modalEtapaCtx.obraId);
+        }
+
+        // Só usadas em etapas simples (sem checklist por tipo): Validação Supervisor/Gerência.
+        function definirStatusEtapa(novoStatus) {
+            const etapa = getEtapaAtual();
+            if (!etapa || etapa.porTipo || etapa.status === 'concluida') return;
+
+            etapa.status = novoStatus;
+            if (novoStatus === 'pendente') {
+                etapa.pct = 0; etapa.icone = '—'; etapa.cor = 'var(--text-dim)';
+            } else if (novoStatus === 'em_andamento') {
+                etapa.pct = (etapa.pct > 0 && etapa.pct < 100) ? etapa.pct : 50;
+                etapa.icone = `${etapa.pct}%`; etapa.cor = 'var(--amber)';
+            } else if (novoStatus === 'concluida') {
+                etapa.pct = 100; etapa.icone = '✓'; etapa.cor = 'var(--green)';
+            }
+
+            renderModalEtapa(etapa);
+            renderObra(modalEtapaCtx.obraId);
+        }
+
+        function atualizarProgressoEtapa(valor) {
+            const etapa = getEtapaAtual();
+            if (!etapa || etapa.porTipo || etapa.status === 'concluida') return;
+            etapa.pct = Number(valor);
+            etapa.icone = `${etapa.pct}%`;
+
+            document.getElementById('modal-progress-valor').textContent = etapa.pct;
+            document.getElementById('modal-etapa-ring').style.setProperty('--pct', etapa.pct);
+            document.getElementById('modal-etapa-ring-inner').textContent = etapa.icone;
+
+            renderObra(modalEtapaCtx.obraId);
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                fecharDetalhesEtapa();
+                fecharNovoProjeto();
+                fecharNovoCliente();
+            }
+        });
+
+        // RENDERIZAÇÃO: CONFIGURAÇÕES
+        function renderConfiguracoes() {
+            const tbody = document.getElementById('config-usuarios');
+            tbody.innerHTML = '';
+            db.usuarios.forEach(u => {
+                tbody.innerHTML += `
+                <tr>
+                    <td>${u.nome}</td>
+                    <td>${u.email}</td>
+                    <td style="text-transform: capitalize;">${u.perfil}</td>
+                    <td style="color: var(--green);">${u.ativo}</td>
+                </tr>`;
+            });
+        }
+
+        // RENDERIZAÇÃO: CLIENTES
+        function renderClientes() {
+            const tbody = document.getElementById('clientes-lista');
+            tbody.innerHTML = '';
+            if (db.clientes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4">Nenhum cliente cadastrado</td></tr>';
+                return;
+            }
+            db.clientes.forEach(c => {
+                const qtdObras = db.obras.filter(o => o.clienteId === c.id).length;
+                tbody.innerHTML += `
+                <tr>
+                    <td>${c.nome}</td>
+                    <td>${c.contato}</td>
+                    <td>${c.telefone}</td>
+                    <td>${qtdObras}</td>
+                </tr>`;
+            });
+        }
+
+        function abrirNovoCliente() {
+            document.getElementById('nc-nome').value = '';
+            document.getElementById('nc-contato').value = '';
+            document.getElementById('nc-telefone').value = '';
+            document.getElementById('modal-novo-cliente').classList.add('ativo');
+        }
+
+        function fecharNovoCliente() {
+            const modal = document.getElementById('modal-novo-cliente');
+            if (modal) modal.classList.remove('ativo');
+        }
+
+        function confirmarNovoCliente() {
+            const nome = document.getElementById('nc-nome').value.trim();
+            const contato = document.getElementById('nc-contato').value.trim();
+            const telefone = document.getElementById('nc-telefone').value.trim();
+
+            if (!nome) { alert('Informe o nome do cliente.'); return; }
+
+            const novoId = Math.max(0, ...db.clientes.map(c => c.id)) + 1;
+            db.clientes.push({ id: novoId, nome, contato: contato || 'Não informado', telefone: telefone || 'Não informado' });
+
+            fecharNovoCliente();
+            renderClientes();
+        }
+
+        // NOVO PROJETO
+        function abrirNovoProjeto() {
+            if (db.clientes.length === 0) {
+                alert('Cadastre um cliente antes de criar um projeto.');
+                navegarPara('clientes');
+                return;
+            }
+            document.getElementById('np-nome').value = '';
+            document.getElementById('np-cliente').innerHTML = db.clientes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+            document.getElementById('modal-novo-projeto').classList.add('ativo');
+        }
+
+        function fecharNovoProjeto() {
+            const modal = document.getElementById('modal-novo-projeto');
+            if (modal) modal.classList.remove('ativo');
+        }
+
+        function confirmarNovoProjeto() {
+            const nome = document.getElementById('np-nome').value.trim();
+            const clienteId = Number(document.getElementById('np-cliente').value);
+
+            if (!nome || !clienteId) { alert('Preencha o nome do projeto e selecione o cliente.'); return; }
+
+            const novoId = Math.max(0, ...db.obras.map(o => o.id)) + 1;
+            const novaObra = {
+                id: novoId, nome, clienteId, status: 'nao_iniciada', progresso: 0,
+                etapaAtual: 'Levantamento Técnico', ultimoDisp: 'Nenhum equipamento',
+                dispositivos: [],
+                etapas: [
+                    { ordem: '01', nome: 'Levantamento Técnico', status: 'pendente', pct: 0, cor: 'var(--text-dim)', icone: '—', desc: 'Vistoria inicial e viabilidade', dataInicio: null, dataEntrega: null, historico: [], formularioLevantamento: true, dadosLevantamento: { responsavel: '', tipos: [], qtdPorTipo: { controle_acesso: null, cftv: null } } }
+                ]
+            };
+
+            db.obras.push(novaObra);
+            fecharNovoProjeto();
+            navegarPara('obra', novoId);
+        }
+
+        // INICIALIZAÇÃO
+        window.onload = function() {
+            const userAtivo = localStorage.getItem('sessionUser');
+            if(userAtivo) {
+                configurarSessao(JSON.parse(userAtivo));
+                navegarPara('dashboard');
+            } else {
+                navegarPara('login');
+            }
+        };
+    </script>
+</body>
+</html>
