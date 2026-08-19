@@ -106,6 +106,7 @@
         .filtro-btn.ativo { border-color: var(--cyan); color: var(--cyan); background: var(--panel-2); }
         .andamento-relatorios { display: flex; gap: 10px; flex-wrap: wrap; }
         .linha-clicavel { cursor: pointer; }
+        .tabela-select { font-family: var(--font-ui); font-size: 12.5px; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; }
         .modal-equip-projeto-tipo-titulo { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
         /* Modal Detalhes da Etapa */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,30,50,.55); align-items: center; justify-content: center; z-index: 100; padding: 20px; }
@@ -143,15 +144,27 @@
         .modal-checklist { display: none; flex-direction: column; gap: 8px; }
         .modal-checklist-titulo { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--text-dim); }
         .modal-checklist-lista { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
-        .modal-checklist-item { display: flex; align-items: center; gap: 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer; }
-        .modal-checklist-item input { width: auto; accent-color: var(--green); }
-        .modal-checklist-item.concluido { color: var(--text-dim); text-decoration: line-through; }
-        .modal-checklist-item:has(input:disabled) { cursor: not-allowed; opacity: .75; }
+        .modal-checklist-item { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 13px; }
+        .modal-checklist-item input[type="checkbox"] { width: auto; accent-color: var(--green); cursor: pointer; }
+        .modal-checklist-item label { flex: 1; cursor: pointer; }
+        .modal-checklist-item.concluido label { color: var(--text-dim); text-decoration: line-through; }
+        .modal-checklist-item:has(input:disabled) label { cursor: not-allowed; opacity: .75; }
+        .modal-checklist-foto { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; flex-shrink: 0; }
+        .modal-checklist-foto-item { position: relative; width: 32px; height: 32px; }
+        .modal-checklist-foto-thumb { width: 32px; height: 32px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); display: block; }
+        .modal-checklist-foto-remover { position: absolute; top: -6px; right: -6px; width: 16px; height: 16px; border-radius: 50%; background: var(--red); color: #fff; border: none; cursor: pointer; font-size: 10px; line-height: 1; padding: 0; display: flex; align-items: center; justify-content: center; }
+        .modal-checklist-foto-btn { cursor: pointer; font-size: 16px; display: inline-flex; align-items: center; position: relative; }
+        .modal-checklist-foto-btn input[type="file"] { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
         .modal-edit-data input:disabled, .modal-edit-data select:disabled { opacity: .6; cursor: not-allowed; }
         .etapa-subtipos { display: flex; flex-direction: column; gap: 3px; font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
         .etapa-subtipos strong { color: var(--text); font-weight: 600; }
-        .modal-foto-etapa img { max-width: 100%; border-radius: 8px; border: 1px solid var(--line); display: block; }
-        .modal-foto-etapa input[type="file"] { font-family: var(--font-ui); font-size: 12px; color: var(--text); }
+        .modal-foto-galeria { display: flex; flex-wrap: wrap; gap: 10px; }
+        .modal-foto-galeria-item { position: relative; width: 84px; height: 84px; }
+        .modal-foto-galeria-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); display: block; }
+        .modal-foto-galeria-remover { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; background: var(--red); color: #fff; border: none; cursor: pointer; font-size: 12px; line-height: 1; padding: 0; display: flex; align-items: center; justify-content: center; }
+        .modal-foto-botoes { display: flex; gap: 8px; flex-wrap: wrap; }
+        .modal-foto-btn-label { display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
+        .modal-foto-btn-label input[type="file"] { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
         .modal-historico { display: none; border-top: 1px solid var(--line); padding-top: 12px; }
         .modal-historico-titulo { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
         .historico-item { padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 12px; }
@@ -202,6 +215,8 @@
             <nav class="topbar-nav">
                 <button class="nav-btn" id="nav-dashboard" onclick="navegarPara('dashboard')">Dashboard</button>
                 <button class="nav-btn" id="nav-andamento" onclick="navegarPara('andamento')">Andamento</button>
+                <button class="nav-btn" id="nav-plantas" onclick="navegarPara('plantas')">Plantas</button>
+                <button class="nav-btn" id="nav-pedidos" onclick="navegarPara('pedidos')">Pedidos LM</button>
                 <button class="nav-btn" id="nav-clientes" onclick="navegarPara('clientes')">Clientes</button>
                 <button class="nav-btn nav-btn-primary" onclick="abrirNovoProjeto()">+ Novo projeto</button>
                 <button class="nav-btn" id="nav-config" onclick="navegarPara('configuracoes')" style="display:none;">Configurações</button>
@@ -306,6 +321,32 @@
         </div>
     </section>
 
+    <!-- TELA: PLANTAS -->
+    <section id="tela-plantas" class="tela">
+        <div class="container">
+            <div class="section-title">Plantas por projeto</div>
+            <div class="table-scroll">
+                <table class="devices-table">
+                    <thead><tr><th>Projeto</th><th>Cliente</th><th>Plantas anexadas</th></tr></thead>
+                    <tbody id="plantas-lista"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- TELA: PEDIDOS LM (LISTA DE MATERIAIS) -->
+    <section id="tela-pedidos" class="tela">
+        <div class="container">
+            <div class="section-title">Pedidos de material (LM)</div>
+            <div class="table-scroll">
+                <table class="devices-table">
+                    <thead><tr><th>Projeto</th><th>Cliente</th><th>Itens pedidos</th><th>Pendentes</th></tr></thead>
+                    <tbody id="pedidos-lista"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
     <!-- TELA 5: CLIENTES -->
     <section id="tela-clientes" class="tela">
         <div class="container">
@@ -319,6 +360,59 @@
             </div>
         </div>
     </section>
+
+    <!-- MODAL: PLANTAS DO PROJETO -->
+    <div id="modal-plantas-projeto" class="modal-overlay" onclick="if(event.target === this) fecharPlantasProjeto()">
+        <div class="modal-box" style="max-width:520px;">
+            <div class="modal-head">
+                <div>
+                    <div class="etapa-ordem">PLANTAS DO PROJETO</div>
+                    <div class="modal-etapa-nome" id="modal-plantas-titulo">Nome do projeto</div>
+                </div>
+                <button class="modal-close" onclick="fecharPlantasProjeto()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-plantas-lista" style="display:flex; flex-direction:column; gap:8px; max-height:45vh; overflow-y:auto;"></div>
+                <div class="modal-edit-data" style="display:flex;">
+                    <div class="modal-edit-data-titulo">Adicionar planta</div>
+                    <label>Arquivo (PDF ou imagem) <input type="file" accept=".pdf,image/*" id="planta-input"></label>
+                    <div class="modal-edit-actions">
+                        <button class="btn btn-primary" onclick="adicionarPlanta()">Adicionar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: PEDIDOS DE MATERIAL (LM) DO PROJETO -->
+    <div id="modal-pedidos-projeto" class="modal-overlay" onclick="if(event.target === this) fecharPedidosProjeto()">
+        <div class="modal-box" style="max-width:560px;">
+            <div class="modal-head">
+                <div>
+                    <div class="etapa-ordem">PEDIDOS DE MATERIAL (LM)</div>
+                    <div class="modal-etapa-nome" id="modal-pedidos-titulo">Nome do projeto</div>
+                </div>
+                <button class="modal-close" onclick="fecharPedidosProjeto()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="table-scroll" style="max-height:40vh; overflow-y:auto;">
+                    <table class="devices-table">
+                        <thead><tr><th>Descrição</th><th>Solicitante</th><th>Arquivo</th><th>Status</th><th>Data</th><th></th></tr></thead>
+                        <tbody id="modal-pedidos-lista"></tbody>
+                    </table>
+                </div>
+                <div class="modal-edit-data" style="display:flex;">
+                    <div class="modal-edit-data-titulo">Novo pedido</div>
+                    <label>Descrição do pedido <input type="text" id="pedido-descricao" placeholder="Ex: Lista de materiais — Fase 1"></label>
+                    <label>Solicitante (quem fez o pedido) <input type="text" id="pedido-solicitante" placeholder="Nome de quem solicitou"></label>
+                    <label>Arquivo do pedido (Excel) <input type="file" accept=".xlsx,.xls,.csv" id="pedido-arquivo"></label>
+                    <div class="modal-edit-actions">
+                        <button class="btn btn-primary" onclick="adicionarPedido()">Adicionar pedido</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL: EQUIPAMENTOS DO PROJETO (aba auxiliar a partir de Andamento) -->
     <div id="modal-equip-projeto" class="modal-overlay" onclick="if(event.target === this) fecharEquipamentosProjeto()">
@@ -471,11 +565,17 @@
                 </div>
 
                 <div class="modal-edit-data modal-foto-etapa" id="modal-foto-etapa" style="display:none;">
-                    <div class="modal-edit-data-titulo">Foto da etapa concluída</div>
-                    <img id="modal-foto-preview" style="display:none;">
-                    <label>Anexar foto (evidência para o relatório) <input type="file" accept="image/*" id="modal-foto-input" onchange="anexarFotoEtapa(this)"></label>
-                    <div class="modal-edit-actions" id="modal-foto-remover-wrap" style="display:none;">
-                        <button class="btn" onclick="removerFotoEtapa()">Remover foto</button>
+                    <div class="modal-edit-data-titulo">Fotos da etapa concluída (evidência para o relatório)</div>
+                    <div class="modal-foto-galeria" id="modal-foto-galeria"></div>
+                    <div class="modal-foto-botoes">
+                        <label class="btn btn-sm modal-foto-btn-label">
+                            📷 Tirar foto
+                            <input type="file" accept="image/*" capture="environment" id="modal-foto-input-camera" onchange="anexarFotoEtapa(this)">
+                        </label>
+                        <label class="btn btn-sm modal-foto-btn-label">
+                            🖼️ Escolher arquivo
+                            <input type="file" accept="image/*" id="modal-foto-input" onchange="anexarFotoEtapa(this)">
+                        </label>
                     </div>
                 </div>
 
@@ -509,6 +609,10 @@
                     dispositivos: [
                         { tipo: 'Catraca', modelo: 'Topdata Ntron', qtd: 2, local: 'Portaria', status: 'em_instalacao' }
                     ],
+                    plantas: [],
+                    pedidosLM: [
+                        { id: 1, descricao: 'Catracas — Portaria', solicitante: 'Bruno Tavares', arquivo: null, nomeArquivo: null, status: 'aprovado', data: '2026-07-10' }
+                    ],
                     etapas: [
                         { ordem: '01', nome: 'Levantamento Técnico', status: 'concluida', pct: 100, cor: 'var(--green)', icone: '✓', desc: 'Vistoria inicial e viabilidade', dataInicio: '2026-06-20', dataEntrega: '2026-06-24', historico: [], formularioLevantamento: true, dadosLevantamento: { responsavel: 'Bruno Tavares', tipos: ['controle_acesso'], qtdPorTipo: { controle_acesso: 8, cftv: null } } },
                         { ordem: '02', nome: 'Passagem de Infraestrutura', desc: 'Eletrodutos e canaletas', dataInicio: '2026-07-25', dataEntrega: '2026-08-25', historico: [], porTipo: { controle_acesso: { equipamentos: [
@@ -529,6 +633,8 @@
                     id: 2, nome: 'CFTV Perimetral — Shopping Vale Norte', clienteId: 2, status: 'nao_iniciada', progresso: 0,
                     etapaAtual: 'Levantamento Técnico', ultimoDisp: 'Nenhum equipamento',
                     dispositivos: [],
+                    plantas: [],
+                    pedidosLM: [],
                     etapas: [
                         { ordem: '01', nome: 'Levantamento Técnico', status: 'pendente', pct: 0, cor: 'var(--text-dim)', icone: '—', desc: 'Vistoria inicial e viabilidade', dataInicio: null, dataEntrega: '2026-09-05', historico: [], formularioLevantamento: true, dadosLevantamento: { responsavel: '', tipos: [], qtdPorTipo: { controle_acesso: null, cftv: null } } }
                     ]
@@ -558,6 +664,8 @@
             if (idTela === 'configuracoes') renderConfiguracoes();
             if (idTela === 'clientes') renderClientes();
             if (idTela === 'andamento') renderAndamento();
+            if (idTela === 'plantas') renderPlantas();
+            if (idTela === 'pedidos') renderPedidos();
         }
 
         function nomeCliente(clienteId) {
@@ -608,6 +716,8 @@
         function atualizarBotoesTopbar(telaAtual) {
             document.getElementById('nav-dashboard').classList.toggle('active', telaAtual === 'dashboard');
             document.getElementById('nav-andamento').classList.toggle('active', telaAtual === 'andamento');
+            document.getElementById('nav-plantas').classList.toggle('active', telaAtual === 'plantas');
+            document.getElementById('nav-pedidos').classList.toggle('active', telaAtual === 'pedidos');
             document.getElementById('nav-clientes').classList.toggle('active', telaAtual === 'clientes');
             document.getElementById('nav-config').classList.toggle('active', telaAtual === 'configuracoes');
             // Fecha dropdown ao clicar fora
@@ -830,12 +940,29 @@
                 checklistWrap.style.display = 'flex';
                 document.getElementById('modal-checklist-titulo').textContent = `Equipamentos — ${TIPO_LABEL[abaAtivaTipo]} (${feitos}/${sub.equipamentos.length} concluídos)${tipoBloqueado ? ' — concluído, bloqueado para edição' : ''}`;
                 document.getElementById('modal-checklist-lista').innerHTML = sub.equipamentos.length
-                    ? sub.equipamentos.map((eq, i) => `
-                        <label class="modal-checklist-item ${eq.concluido ? 'concluido' : ''}">
-                            <input type="checkbox" ${eq.concluido ? 'checked' : ''} ${tipoBloqueado ? 'disabled' : ''} onchange="alternarEquipamentoConcluido('${abaAtivaTipo}', ${i})">
-                            ${eq.nome}
-                        </label>
-                    `).join('')
+                    ? sub.equipamentos.map((eq, i) => {
+                        const inputId = `eq-check-${abaAtivaTipo}-${i}`;
+                        const fotos = eq.fotos || [];
+                        const fotoBloco = eq.concluido ? `
+                            <div class="modal-checklist-foto">
+                                ${fotos.map((foto, fi) => `
+                                    <span class="modal-checklist-foto-item">
+                                        <img src="${foto}" class="modal-checklist-foto-thumb" alt="Foto ${fi + 1} — ${eq.nome}">
+                                        <button type="button" class="modal-checklist-foto-remover" onclick="removerFotoEquipamento('${abaAtivaTipo}', ${i}, ${fi})" title="Remover foto">&times;</button>
+                                    </span>
+                                `).join('')}
+                                <label class="modal-checklist-foto-btn" title="Adicionar foto do equipamento">
+                                    📷+
+                                    <input type="file" accept="image/*" capture="environment" onchange="anexarFotoEquipamento('${abaAtivaTipo}', ${i}, this)">
+                                </label>
+                            </div>` : '';
+                        return `
+                        <div class="modal-checklist-item ${eq.concluido ? 'concluido' : ''}">
+                            <input type="checkbox" id="${inputId}" ${eq.concluido ? 'checked' : ''} ${tipoBloqueado ? 'disabled' : ''} onchange="alternarEquipamentoConcluido('${abaAtivaTipo}', ${i})">
+                            <label for="${inputId}">${eq.nome}</label>
+                            ${fotoBloco}
+                        </div>`;
+                    }).join('')
                     : '<div class="etapa-desc">Nenhum equipamento registrado para este tipo.</div>';
 
                 sliderWrap.style.display = 'none';
@@ -883,20 +1010,20 @@
             document.getElementById('btn-editar-inicio').disabled = etapaConcluida;
             document.getElementById('btn-editar-entrega').disabled = etapaConcluida;
 
+            // Foto no nível da etapa só faz sentido para etapas sem checklist (Validação
+            // Supervisor/Gerência) — nas etapas com equipamentos, a foto é por item concluído.
             const fotoWrap = document.getElementById('modal-foto-etapa');
-            if (etapaConcluida) {
+            if (etapaConcluida && !etapa.porTipo) {
                 fotoWrap.style.display = 'flex';
-                const preview = document.getElementById('modal-foto-preview');
-                const removerWrap = document.getElementById('modal-foto-remover-wrap');
-                if (etapa.foto) {
-                    preview.src = etapa.foto;
-                    preview.style.display = 'block';
-                    removerWrap.style.display = 'flex';
-                } else {
-                    preview.style.display = 'none';
-                    removerWrap.style.display = 'none';
-                }
+                const fotosEtapa = etapa.fotos || [];
+                document.getElementById('modal-foto-galeria').innerHTML = fotosEtapa.map((foto, fi) => `
+                    <div class="modal-foto-galeria-item">
+                        <img src="${foto}" alt="Foto ${fi + 1}">
+                        <button type="button" class="modal-foto-galeria-remover" onclick="removerFotoEtapa(${fi})" title="Remover foto">&times;</button>
+                    </div>
+                `).join('');
                 document.getElementById('modal-foto-input').value = '';
+                document.getElementById('modal-foto-input-camera').value = '';
             } else {
                 fotoWrap.style.display = 'none';
             }
@@ -946,16 +1073,41 @@
             const arquivo = input.files[0];
             const leitor = new FileReader();
             leitor.onload = () => {
-                etapa.foto = leitor.result;
+                if (!etapa.fotos) etapa.fotos = [];
+                etapa.fotos.push(leitor.result);
                 renderModalEtapa(etapa);
             };
             leitor.readAsDataURL(arquivo);
         }
 
-        function removerFotoEtapa() {
+        function removerFotoEtapa(indice) {
             const etapa = getEtapaAtual();
-            if (!etapa) return;
-            etapa.foto = null;
+            if (!etapa || !etapa.fotos) return;
+            etapa.fotos.splice(indice, 1);
+            renderModalEtapa(etapa);
+        }
+
+        // Foto por equipamento concluído (checklist das etapas com porTipo) — aceita várias fotos
+        function anexarFotoEquipamento(tipo, index, input) {
+            const etapa = getEtapaAtual();
+            if (!etapa || !etapa.porTipo || !etapa.porTipo[tipo] || !input.files || !input.files[0]) return;
+            const arquivo = input.files[0];
+            const leitor = new FileReader();
+            leitor.onload = () => {
+                const equipamento = etapa.porTipo[tipo].equipamentos[index];
+                if (!equipamento.fotos) equipamento.fotos = [];
+                equipamento.fotos.push(leitor.result);
+                renderModalEtapa(etapa);
+            };
+            leitor.readAsDataURL(arquivo);
+        }
+
+        function removerFotoEquipamento(tipo, index, fotoIndex) {
+            const etapa = getEtapaAtual();
+            if (!etapa || !etapa.porTipo || !etapa.porTipo[tipo]) return;
+            const equipamento = etapa.porTipo[tipo].equipamentos[index];
+            if (!equipamento.fotos) return;
+            equipamento.fotos.splice(fotoIndex, 1);
             renderModalEtapa(etapa);
         }
 
@@ -1203,6 +1355,8 @@
                 fecharNovoProjeto();
                 fecharNovoCliente();
                 fecharEquipamentosProjeto();
+                fecharPlantasProjeto();
+                fecharPedidosProjeto();
             }
         });
 
@@ -1284,12 +1438,22 @@
         }
 
         function gerarGaleriaFotosHtml(obra) {
-            const comFoto = obra.etapas.filter(e => e.foto);
-            if (comFoto.length === 0) return '<p>Nenhuma foto anexada às etapas concluídas.</p>';
-            return `<div class="galeria-fotos">${comFoto.map(e => `
+            const itens = [];
+            obra.etapas.forEach(e => {
+                (e.fotos || []).forEach((foto, fi) => itens.push({ foto, legenda: `${e.ordem} — ${e.nome} (foto ${fi + 1})` }));
+                if (e.porTipo) {
+                    Object.entries(e.porTipo).forEach(([tipo, sub]) => {
+                        sub.equipamentos.forEach(eq => {
+                            (eq.fotos || []).forEach((foto, fi) => itens.push({ foto, legenda: `${e.ordem} — ${e.nome} · ${TIPO_LABEL[tipo]} · ${eq.nome} (foto ${fi + 1})` }));
+                        });
+                    });
+                }
+            });
+            if (itens.length === 0) return '<p>Nenhuma foto anexada.</p>';
+            return `<div class="galeria-fotos">${itens.map(it => `
                 <div class="galeria-foto-item">
-                    <img src="${e.foto}" alt="Foto — ${e.nome}">
-                    <div class="galeria-foto-legenda">${e.ordem} — ${e.nome}</div>
+                    <img src="${it.foto}" alt="${it.legenda}">
+                    <div class="galeria-foto-legenda">${it.legenda}</div>
                 </div>`).join('')}</div>`;
         }
 
@@ -1448,6 +1612,163 @@
             abrirDetalhesEtapa(obraId, ordem);
         }
 
+        // PLANTAS DO PROJETO (upload por obra)
+        let modalPlantasObraId = null;
+
+        function renderPlantas() {
+            const tbody = document.getElementById('plantas-lista');
+            tbody.innerHTML = db.obras.map(o => `
+                <tr class="linha-clicavel" onclick="abrirPlantasProjeto(${o.id})">
+                    <td>${o.nome}</td>
+                    <td>${nomeCliente(o.clienteId)}</td>
+                    <td>${o.plantas.length}</td>
+                </tr>`).join('') || '<tr><td colspan="3">Nenhum projeto cadastrado</td></tr>';
+        }
+
+        function abrirPlantasProjeto(obraId) {
+            modalPlantasObraId = obraId;
+            const obra = db.obras.find(o => o.id === obraId);
+            document.getElementById('modal-plantas-titulo').textContent = obra.nome;
+            document.getElementById('planta-input').value = '';
+            renderModalPlantas(obra);
+            document.getElementById('modal-plantas-projeto').classList.add('ativo');
+        }
+
+        function fecharPlantasProjeto() {
+            const modal = document.getElementById('modal-plantas-projeto');
+            if (modal) modal.classList.remove('ativo');
+        }
+
+        function renderModalPlantas(obra) {
+            const lista = document.getElementById('modal-plantas-lista');
+            lista.innerHTML = obra.plantas.length ? obra.plantas.map(p => `
+                <div class="modal-data-row">
+                    <div class="modal-data-info">
+                        <span class="modal-data-label">${p.tipo && p.tipo.includes('pdf') ? 'PDF' : 'Imagem'} · ${formatarDataBR(p.dataEnvio)}</span>
+                        <strong>${p.nome}</strong>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <a class="btn btn-sm" href="${p.arquivo}" target="_blank" rel="noopener">Abrir</a>
+                        <button class="btn btn-sm" onclick="removerPlanta(${p.id})">Remover</button>
+                    </div>
+                </div>`).join('') : '<div class="empty-state">Nenhuma planta anexada ainda.</div>';
+        }
+
+        function adicionarPlanta() {
+            const obra = db.obras.find(o => o.id === modalPlantasObraId);
+            const input = document.getElementById('planta-input');
+            if (!input.files || !input.files[0]) { alert('Selecione um arquivo.'); return; }
+            const arquivo = input.files[0];
+            const leitor = new FileReader();
+            leitor.onload = () => {
+                obra.plantas.push({ id: Date.now(), nome: arquivo.name, arquivo: leitor.result, tipo: arquivo.type, dataEnvio: new Date().toISOString().slice(0, 10) });
+                input.value = '';
+                renderModalPlantas(obra);
+                renderPlantas();
+            };
+            leitor.readAsDataURL(arquivo);
+        }
+
+        function removerPlanta(id) {
+            const obra = db.obras.find(o => o.id === modalPlantasObraId);
+            obra.plantas = obra.plantas.filter(p => p.id !== id);
+            renderModalPlantas(obra);
+            renderPlantas();
+        }
+
+        // PEDIDOS DE MATERIAL (LM) POR PROJETO
+        let modalPedidosObraId = null;
+        const STATUS_LM_LABEL = { solicitado: 'Solicitado', aprovado: 'Aprovado', recebido: 'Recebido' };
+
+        function renderPedidos() {
+            const tbody = document.getElementById('pedidos-lista');
+            tbody.innerHTML = db.obras.map(o => {
+                const pendentes = o.pedidosLM.filter(p => p.status !== 'recebido').length;
+                return `
+                <tr class="linha-clicavel" onclick="abrirPedidosProjeto(${o.id})">
+                    <td>${o.nome}</td>
+                    <td>${nomeCliente(o.clienteId)}</td>
+                    <td>${o.pedidosLM.length}</td>
+                    <td>${pendentes > 0 ? `<span class="badge status-andamento">${pendentes} pendente${pendentes > 1 ? 's' : ''}</span>` : '<span class="badge status-concluida">Tudo recebido</span>'}</td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="4">Nenhum projeto cadastrado</td></tr>';
+        }
+
+        function abrirPedidosProjeto(obraId) {
+            modalPedidosObraId = obraId;
+            const obra = db.obras.find(o => o.id === obraId);
+            document.getElementById('modal-pedidos-titulo').textContent = obra.nome;
+            document.getElementById('pedido-descricao').value = '';
+            document.getElementById('pedido-solicitante').value = '';
+            document.getElementById('pedido-arquivo').value = '';
+            renderModalPedidos(obra);
+            document.getElementById('modal-pedidos-projeto').classList.add('ativo');
+        }
+
+        function fecharPedidosProjeto() {
+            const modal = document.getElementById('modal-pedidos-projeto');
+            if (modal) modal.classList.remove('ativo');
+        }
+
+        function renderModalPedidos(obra) {
+            const tbody = document.getElementById('modal-pedidos-lista');
+            tbody.innerHTML = obra.pedidosLM.length ? obra.pedidosLM.map(p => `
+                <tr>
+                    <td>${p.descricao}</td>
+                    <td>${p.solicitante}</td>
+                    <td>${p.arquivo ? `<a class="btn btn-sm" href="${p.arquivo}" target="_blank" rel="noopener" download="${p.nomeArquivo}">Abrir</a>` : '—'}</td>
+                    <td>
+                        <select class="tabela-select" onchange="atualizarStatusPedido(${p.id}, this.value)">
+                            ${Object.entries(STATUS_LM_LABEL).map(([valor, label]) => `<option value="${valor}" ${p.status === valor ? 'selected' : ''}>${label}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td>${formatarDataBR(p.data)}</td>
+                    <td><button class="btn btn-sm" onclick="removerPedido(${p.id})">Remover</button></td>
+                </tr>`).join('') : '<tr><td colspan="6">Nenhum pedido registrado ainda.</td></tr>';
+        }
+
+        function adicionarPedido() {
+            const obra = db.obras.find(o => o.id === modalPedidosObraId);
+            const descricao = document.getElementById('pedido-descricao').value.trim();
+            const solicitante = document.getElementById('pedido-solicitante').value.trim();
+            const inputArquivo = document.getElementById('pedido-arquivo');
+            const arquivo = inputArquivo.files && inputArquivo.files[0];
+
+            if (!descricao || !solicitante || !arquivo) {
+                alert('Preencha a descrição, o solicitante e anexe o arquivo do pedido.');
+                return;
+            }
+
+            const leitor = new FileReader();
+            leitor.onload = () => {
+                obra.pedidosLM.push({
+                    id: Date.now(), descricao, solicitante,
+                    arquivo: leitor.result, nomeArquivo: arquivo.name,
+                    status: 'solicitado', data: new Date().toISOString().slice(0, 10)
+                });
+                document.getElementById('pedido-descricao').value = '';
+                document.getElementById('pedido-solicitante').value = '';
+                inputArquivo.value = '';
+                renderModalPedidos(obra);
+                renderPedidos();
+            };
+            leitor.readAsDataURL(arquivo);
+        }
+
+        function atualizarStatusPedido(id, novoStatus) {
+            const obra = db.obras.find(o => o.id === modalPedidosObraId);
+            const item = obra.pedidosLM.find(p => p.id === id);
+            if (item) item.status = novoStatus;
+            renderPedidos();
+        }
+
+        function removerPedido(id) {
+            const obra = db.obras.find(o => o.id === modalPedidosObraId);
+            obra.pedidosLM = obra.pedidosLM.filter(p => p.id !== id);
+            renderModalPedidos(obra);
+            renderPedidos();
+        }
+
         // RENDERIZAÇÃO: CLIENTES
         function renderClientes() {
             const tbody = document.getElementById('clientes-lista');
@@ -1525,6 +1846,8 @@
                 id: novoId, nome, clienteId, status: 'nao_iniciada', progresso: 0,
                 etapaAtual: 'Levantamento Técnico', ultimoDisp: 'Nenhum equipamento',
                 dispositivos: [],
+                plantas: [],
+                pedidosLM: [],
                 etapas: [
                     { ordem: '01', nome: 'Levantamento Técnico', status: 'pendente', pct: 0, cor: 'var(--text-dim)', icone: '—', desc: 'Vistoria inicial e viabilidade', dataInicio: null, dataEntrega: null, historico: [], formularioLevantamento: true, dadosLevantamento: { responsavel: '', tipos: [], qtdPorTipo: { controle_acesso: null, cftv: null } } }
                 ]
