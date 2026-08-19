@@ -101,10 +101,16 @@
         .login-form input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(47,111,237,.15); }
         .login-erro { background: rgba(213,69,92,.1); color: var(--red); border: 1px solid rgba(213,69,92,.3); border-radius: 6px; padding: 9px 12px; font-size: 12.5px; margin-bottom: 16px; display: none;}
         .empty-state { background: var(--panel); border: 1px dashed var(--line); border-radius: 10px; padding: 30px; text-align: center; color: var(--text-dim); font-size: 13px; }
+        /* Andamento */
+        .andamento-filtros { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .filtro-btn.ativo { border-color: var(--cyan); color: var(--cyan); background: var(--panel-2); }
+        .andamento-relatorios { display: flex; gap: 10px; flex-wrap: wrap; }
+        .linha-clicavel { cursor: pointer; }
+        .modal-equip-projeto-tipo-titulo { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
         /* Modal Detalhes da Etapa */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,30,50,.55); align-items: center; justify-content: center; z-index: 100; padding: 20px; }
         .modal-overlay.ativo { display: flex; }
-        .modal-box { width: 100%; max-width: 420px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 24px; box-shadow: 0 24px 60px rgba(10,30,50,.35); }
+        .modal-box { width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 24px; box-shadow: 0 24px 60px rgba(10,30,50,.35); }
         .modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
         .modal-etapa-nome { font-size: 16px; font-weight: 700; margin-top: 2px; }
         .modal-close { background: none; border: none; font-size: 22px; line-height: 1; color: var(--text-dim); cursor: pointer; padding: 0 4px; }
@@ -144,6 +150,8 @@
         .modal-edit-data input:disabled, .modal-edit-data select:disabled { opacity: .6; cursor: not-allowed; }
         .etapa-subtipos { display: flex; flex-direction: column; gap: 3px; font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
         .etapa-subtipos strong { color: var(--text); font-weight: 600; }
+        .modal-foto-etapa img { max-width: 100%; border-radius: 8px; border: 1px solid var(--line); display: block; }
+        .modal-foto-etapa input[type="file"] { font-family: var(--font-ui); font-size: 12px; color: var(--text); }
         .modal-historico { display: none; border-top: 1px solid var(--line); padding-top: 12px; }
         .modal-historico-titulo { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
         .historico-item { padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 12px; }
@@ -158,6 +166,31 @@
         .tela { display: none; }
         .tela.ativa { display: block; }
         .tela.ativa.login-page { display: flex; }
+
+        /* ==========================================================================
+           RESPONSIVO (celular / tablet)
+           ========================================================================== */
+        .table-scroll { overflow-x: auto; }
+        @media (max-width: 900px) {
+            .container { padding: 20px 14px 44px; }
+            .dash-grid { grid-template-columns: 1fr; }
+            .kanban { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+        }
+        @media (max-width: 640px) {
+            .topbar { flex-wrap: wrap; gap: 10px; padding: 12px 16px; }
+            .topbar .brand { font-size: 11px; }
+            .topbar-nav { flex-wrap: wrap; gap: 6px; width: 100%; justify-content: flex-start; }
+            .avatar-menu { margin-left: auto; padding-left: 10px; }
+            .nav-btn { padding: 7px 10px; font-size: 12px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .kanban { grid-template-columns: 1fr; }
+            .modal-box { padding: 18px; max-height: 94vh; }
+            .modal-status-actions { grid-template-columns: 1fr; }
+            .modal-checkbox-group { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .andamento-filtros { gap: 6px; }
+            .devices-table th, .devices-table td { padding: 8px 10px; font-size: 12.5px; }
+            .login-box { padding: 26px 20px; }
+        }
     </style>
 </head>
 <body>
@@ -168,6 +201,7 @@
             <a class="brand" onclick="navegarPara('dashboard')">Segurança Eletrônica · Painel de Obras</a>
             <nav class="topbar-nav">
                 <button class="nav-btn" id="nav-dashboard" onclick="navegarPara('dashboard')">Dashboard</button>
+                <button class="nav-btn" id="nav-andamento" onclick="navegarPara('andamento')">Andamento</button>
                 <button class="nav-btn" id="nav-clientes" onclick="navegarPara('clientes')">Clientes</button>
                 <button class="nav-btn nav-btn-primary" onclick="abrirNovoProjeto()">+ Novo projeto</button>
                 <button class="nav-btn" id="nav-config" onclick="navegarPara('configuracoes')" style="display:none;">Configurações</button>
@@ -227,10 +261,12 @@
             <div class="kanban" id="kanban-container"></div>
             
             <div class="section-title">Dispositivos da obra</div>
-            <table class="devices-table">
-                <thead><tr><th>Tipo</th><th>Modelo</th><th>Qtd.</th><th>Local</th><th>Status</th></tr></thead>
-                <tbody id="dispositivos-container"></tbody>
-            </table>
+            <div class="table-scroll">
+                <table class="devices-table">
+                    <thead><tr><th>Tipo</th><th>Modelo</th><th>Qtd.</th><th>Local</th><th>Status</th></tr></thead>
+                    <tbody id="dispositivos-container"></tbody>
+                </table>
+            </div>
         </div>
     </section>
 
@@ -238,10 +274,35 @@
     <section id="tela-configuracoes" class="tela">
         <div class="container">
             <div class="section-title">Usuários cadastrados</div>
-            <table class="devices-table">
-                <thead><tr><th>Nome (login)</th><th>E-mail</th><th>Perfil</th><th>Status</th></tr></thead>
-                <tbody id="config-usuarios"></tbody>
-            </table>
+            <div class="table-scroll">
+                <table class="devices-table">
+                    <thead><tr><th>Nome (login)</th><th>E-mail</th><th>Perfil</th><th>Status</th></tr></thead>
+                    <tbody id="config-usuarios"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- TELA: ANDAMENTO (PROJETOS + RELATÓRIOS) -->
+    <section id="tela-andamento" class="tela">
+        <div class="container">
+            <div class="section-title">Projetos registrados</div>
+            <div class="andamento-filtros" id="andamento-filtros">
+                <button class="btn filtro-btn ativo" data-filtro="todos" onclick="filtrarAndamento('todos')">Todos</button>
+                <button class="btn filtro-btn" data-filtro="nao_iniciada" onclick="filtrarAndamento('nao_iniciada')">Não iniciada</button>
+                <button class="btn filtro-btn" data-filtro="em_andamento" onclick="filtrarAndamento('em_andamento')">Em andamento</button>
+                <button class="btn filtro-btn" data-filtro="concluida" onclick="filtrarAndamento('concluida')">Concluída</button>
+                <button class="btn filtro-btn" data-filtro="atrasado" onclick="filtrarAndamento('atrasado')">Com atraso</button>
+            </div>
+            <div class="table-scroll">
+                <table class="devices-table">
+                    <thead><tr><th>Projeto</th><th>Cliente</th><th>Status</th><th>Progresso</th><th>Etapa atual</th><th>Etapas atrasadas</th></tr></thead>
+                    <tbody id="andamento-lista"></tbody>
+                </table>
+            </div>
+
+            <div class="section-title">Relatórios</div>
+            <div class="empty-state">O relatório é por projeto. Clique em um projeto na tabela acima para gerar o Relatório Interno ou o Relatório para Cliente.</div>
         </div>
     </section>
 
@@ -250,12 +311,37 @@
         <div class="container">
             <div class="section-title">Clientes cadastrados</div>
             <button class="btn btn-primary" onclick="abrirNovoCliente()" style="margin-bottom: 16px;">+ Novo cliente</button>
-            <table class="devices-table">
-                <thead><tr><th>Nome</th><th>Contato</th><th>Telefone</th><th>Obras</th></tr></thead>
-                <tbody id="clientes-lista"></tbody>
-            </table>
+            <div class="table-scroll">
+                <table class="devices-table">
+                    <thead><tr><th>Nome</th><th>Gestor</th><th>E-mail</th><th>Telefone</th><th>Obras</th></tr></thead>
+                    <tbody id="clientes-lista"></tbody>
+                </table>
+            </div>
         </div>
     </section>
+
+    <!-- MODAL: EQUIPAMENTOS DO PROJETO (aba auxiliar a partir de Andamento) -->
+    <div id="modal-equip-projeto" class="modal-overlay" onclick="if(event.target === this) fecharEquipamentosProjeto()">
+        <div class="modal-box" style="max-width:520px;">
+            <div class="modal-head">
+                <div>
+                    <div class="etapa-ordem">EQUIPAMENTOS DO PROJETO</div>
+                    <div class="modal-etapa-nome" id="modal-equip-projeto-titulo">Nome do projeto</div>
+                </div>
+                <button class="modal-close" onclick="fecharEquipamentosProjeto()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-equip-projeto-cliente" class="etapa-desc"></div>
+                <div id="modal-equip-projeto-responsavel" class="etapa-desc"></div>
+                <div id="modal-equip-projeto-corpo" style="display:flex; flex-direction:column; gap:10px; max-height:52vh; overflow-y:auto;"></div>
+
+                <div class="modal-edit-actions" style="justify-content:flex-start; gap:10px; padding-top:14px; border-top:1px solid var(--line);">
+                    <button class="btn" onclick="gerarRelatorioProjeto(modalEquipProjetoObraId, 'interno')">Relatório interno</button>
+                    <button class="btn btn-primary" onclick="gerarRelatorioProjeto(modalEquipProjetoObraId, 'cliente')">Relatório para cliente</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL: NOVO PROJETO -->
     <div id="modal-novo-projeto" class="modal-overlay" onclick="if(event.target === this) fecharNovoProjeto()">
@@ -292,8 +378,9 @@
             </div>
             <div class="modal-body">
                 <div class="modal-edit-data" style="display:flex;">
-                    <label>Nome <input type="text" id="nc-nome" placeholder="Nome do cliente/empresa"></label>
-                    <label>Contato (e-mail) <input type="email" id="nc-contato" placeholder="contato@empresa.com"></label>
+                    <label>Nome do cliente <input type="text" id="nc-nome" placeholder="Nome do cliente/empresa"></label>
+                    <label>Nome do gestor <input type="text" id="nc-gestor" placeholder="Responsável pelo contrato"></label>
+                    <label>E-mail <input type="email" id="nc-contato" placeholder="contato@empresa.com"></label>
                     <label>Telefone <input type="text" id="nc-telefone" placeholder="(11) 90000-0000"></label>
                     <div class="modal-edit-actions">
                         <button class="btn" onclick="fecharNovoCliente()">Cancelar</button>
@@ -383,6 +470,15 @@
                     <button class="btn" id="btn-status-concluida" onclick="definirStatusEtapa('concluida')">Concluída</button>
                 </div>
 
+                <div class="modal-edit-data modal-foto-etapa" id="modal-foto-etapa" style="display:none;">
+                    <div class="modal-edit-data-titulo">Foto da etapa concluída</div>
+                    <img id="modal-foto-preview" style="display:none;">
+                    <label>Anexar foto (evidência para o relatório) <input type="file" accept="image/*" id="modal-foto-input" onchange="anexarFotoEtapa(this)"></label>
+                    <div class="modal-edit-actions" id="modal-foto-remover-wrap" style="display:none;">
+                        <button class="btn" onclick="removerFotoEtapa()">Remover foto</button>
+                    </div>
+                </div>
+
                 <div class="modal-historico" id="modal-historico">
                     <div class="modal-historico-titulo">Histórico de alterações de data</div>
                     <div id="modal-historico-lista"></div>
@@ -403,8 +499,8 @@
                 { id: 3, nome: 'Camila Nogueira', senha: '123', email: 'camila@empresa.com', perfil: 'gestor', ativo: 'Ativo' }
             ],
             clientes: [
-                { id: 1, nome: 'Condomínio Jardins Ville', contato: 'sindico@jardinsville.com.br', telefone: '(11) 98888-1234' },
-                { id: 2, nome: 'Shopping Vale Norte', contato: 'facilities@valenorte.com.br', telefone: '(11) 97777-5678' }
+                { id: 1, nome: 'Condomínio Jardins Ville', gestor: 'Renata Souza', contato: 'sindico@jardinsville.com.br', telefone: '(11) 98888-1234' },
+                { id: 2, nome: 'Shopping Vale Norte', gestor: 'Marcelo Andrade', contato: 'facilities@valenorte.com.br', telefone: '(11) 97777-5678' }
             ],
             obras: [
                 {
@@ -461,6 +557,7 @@
             if (idTela === 'obra') renderObra(params);
             if (idTela === 'configuracoes') renderConfiguracoes();
             if (idTela === 'clientes') renderClientes();
+            if (idTela === 'andamento') renderAndamento();
         }
 
         function nomeCliente(clienteId) {
@@ -510,6 +607,7 @@
 
         function atualizarBotoesTopbar(telaAtual) {
             document.getElementById('nav-dashboard').classList.toggle('active', telaAtual === 'dashboard');
+            document.getElementById('nav-andamento').classList.toggle('active', telaAtual === 'andamento');
             document.getElementById('nav-clientes').classList.toggle('active', telaAtual === 'clientes');
             document.getElementById('nav-config').classList.toggle('active', telaAtual === 'configuracoes');
             // Fecha dropdown ao clicar fora
@@ -550,8 +648,26 @@
         }
 
         // RENDERIZAÇÃO: DETALHES DA OBRA (KANBAN)
+        // Recalcula status/progresso/etapa atual da obra a partir do estado real das etapas.
+        // Chamada sempre que a obra é renderizada, então os cards do Dashboard e a lista de
+        // Andamento sempre refletem o que foi feito no modal de detalhes da etapa.
+        function atualizarResumoObra(obra) {
+            const estados = obra.etapas.map(obterEstadoExibicao);
+            const total = estados.length;
+
+            obra.progresso = total > 0 ? Math.round(estados.reduce((acc, e) => acc + e.pct, 0) / total) : 0;
+
+            const todasConcluidas = estados.every(e => e.status === 'concluida');
+            const algumaAtiva = estados.some(e => e.status !== 'pendente');
+            obra.status = todasConcluidas ? 'concluida' : (algumaAtiva ? 'em_andamento' : 'nao_iniciada');
+
+            const indiceAtual = estados.findIndex(e => e.status !== 'concluida');
+            obra.etapaAtual = indiceAtual === -1 ? 'Projeto concluído' : obra.etapas[indiceAtual].nome;
+        }
+
         function renderObra(obraId) {
             const obra = db.obras.find(o => o.id === obraId);
+            atualizarResumoObra(obra);
             document.getElementById('obra-titulo').innerHTML = `Fluxo da Obra: <span style="color:var(--amber)">${obra.nome}</span>`;
             document.getElementById('obra-cliente').textContent = `Cliente: ${nomeCliente(obra.clienteId)}`;
 
@@ -584,11 +700,10 @@
                         ${statusBadge}${atrasada ? ' <span class="badge status-atrasada">Atrasada</span>' : ''}
                         <div class="etapa-desc">${e.desc}</div>
                         ${subtiposResumo}
-                        <div class="etapa-datas">
+                        <div class="etapa-datas" style="margin-top:auto;">
                             <span>Início: <strong>${formatarDataBR(e.dataInicio)}</strong></span>
                             <span>Entrega: <strong>${formatarDataBR(e.dataEntrega)}</strong></span>
                         </div>
-                        <button class="btn" style="margin-top:auto;" onclick="abrirDetalhesEtapa(${obra.id}, '${e.ordem}')">Detalhes da Etapa</button>
                     </div>
                 </div>`;
             });
@@ -730,7 +845,10 @@
                 tabsWrap.style.display = 'none';
                 tabsWrap.innerHTML = '';
                 checklistWrap.style.display = 'none';
-                statusActions.style.display = 'grid';
+                // No Levantamento Técnico, quem conclui a etapa é "Salvar dados" do formulário
+                // (que já gera as etapas seguintes) — os botões manuais ficam escondidos aqui
+                // para evitar marcar "Concluída" sem salvar o levantamento, travando o fluxo.
+                statusActions.style.display = etapa.formularioLevantamento ? 'none' : 'grid';
 
                 est = { status: etapa.status, pct: etapa.pct, cor: etapa.cor, icone: etapa.icone };
 
@@ -764,6 +882,24 @@
             const etapaConcluida = obterEstadoExibicao(etapa).status === 'concluida';
             document.getElementById('btn-editar-inicio').disabled = etapaConcluida;
             document.getElementById('btn-editar-entrega').disabled = etapaConcluida;
+
+            const fotoWrap = document.getElementById('modal-foto-etapa');
+            if (etapaConcluida) {
+                fotoWrap.style.display = 'flex';
+                const preview = document.getElementById('modal-foto-preview');
+                const removerWrap = document.getElementById('modal-foto-remover-wrap');
+                if (etapa.foto) {
+                    preview.src = etapa.foto;
+                    preview.style.display = 'block';
+                    removerWrap.style.display = 'flex';
+                } else {
+                    preview.style.display = 'none';
+                    removerWrap.style.display = 'none';
+                }
+                document.getElementById('modal-foto-input').value = '';
+            } else {
+                fotoWrap.style.display = 'none';
+            }
 
             const atrasada = isEtapaAtrasada(etapa);
             const badgeHtml = est.status === 'concluida' ? '<span class="badge status-concluida">Concluída</span>' :
@@ -801,6 +937,26 @@
             }
 
             renderHistoricoEtapa(etapa);
+        }
+
+        // FOTO DA ETAPA CONCLUÍDA (evidência incluída nos relatórios)
+        function anexarFotoEtapa(input) {
+            const etapa = getEtapaAtual();
+            if (!etapa || !input.files || !input.files[0]) return;
+            const arquivo = input.files[0];
+            const leitor = new FileReader();
+            leitor.onload = () => {
+                etapa.foto = leitor.result;
+                renderModalEtapa(etapa);
+            };
+            leitor.readAsDataURL(arquivo);
+        }
+
+        function removerFotoEtapa() {
+            const etapa = getEtapaAtual();
+            if (!etapa) return;
+            etapa.foto = null;
+            renderModalEtapa(etapa);
         }
 
         function alternarEquipamentoConcluido(tipo, index) {
@@ -922,11 +1078,12 @@
             }
 
             etapa.dadosLevantamento = { responsavel, tipos, qtdPorTipo };
+            etapa.status = 'concluida'; etapa.pct = 100; etapa.icone = '✓'; etapa.cor = 'var(--green)';
             reconstruirEtapasObra(obra);
 
             renderModalEtapa(etapa);
             renderObra(obra.id);
-            alert('Dados salvos. As etapas seguintes foram atualizadas conforme o(s) tipo(s) selecionado(s).');
+            alert('Levantamento salvo e concluído. As etapas seguintes foram geradas conforme o(s) tipo(s) selecionado(s).');
         }
 
         function renderHistoricoEtapa(etapa) {
@@ -1045,6 +1202,7 @@
                 fecharDetalhesEtapa();
                 fecharNovoProjeto();
                 fecharNovoCliente();
+                fecharEquipamentosProjeto();
             }
         });
 
@@ -1063,12 +1221,239 @@
             });
         }
 
+        // RENDERIZAÇÃO: ANDAMENTO (PROJETOS + RELATÓRIOS)
+        let andamentoFiltroAtivo = 'todos';
+
+        function contarEtapasAtrasadas(obra) {
+            return obra.etapas.filter(isEtapaAtrasada).length;
+        }
+
+        function filtrarAndamento(filtro) {
+            andamentoFiltroAtivo = filtro;
+            renderAndamento();
+        }
+
+        function renderAndamento() {
+            document.querySelectorAll('#andamento-filtros .filtro-btn').forEach(btn => {
+                btn.classList.toggle('ativo', btn.dataset.filtro === andamentoFiltroAtivo);
+            });
+
+            const tbody = document.getElementById('andamento-lista');
+            tbody.innerHTML = '';
+
+            let obras = db.obras;
+            if (andamentoFiltroAtivo === 'atrasado') {
+                obras = obras.filter(o => contarEtapasAtrasadas(o) > 0);
+            } else if (andamentoFiltroAtivo !== 'todos') {
+                obras = obras.filter(o => o.status === andamentoFiltroAtivo);
+            }
+
+            if (obras.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6">Nenhum projeto encontrado para este filtro</td></tr>';
+                return;
+            }
+
+            obras.forEach(o => {
+                const badge = o.status === 'em_andamento' ? 'status-andamento' : (o.status === 'concluida' ? 'status-concluida' : 'status-pendente');
+                const label = o.status === 'em_andamento' ? 'Em andamento' : (o.status === 'concluida' ? 'Concluída' : 'Não iniciada');
+                const atrasos = contarEtapasAtrasadas(o);
+                tbody.innerHTML += `
+                <tr class="linha-clicavel" onclick="abrirEquipamentosProjeto(${o.id})">
+                    <td>${o.nome}</td>
+                    <td>${nomeCliente(o.clienteId)}</td>
+                    <td><span class="badge ${badge}">${label}</span></td>
+                    <td>${o.progresso}%</td>
+                    <td>${o.etapaAtual}</td>
+                    <td>${atrasos > 0 ? `<span class="badge status-atrasada">${atrasos} atrasada${atrasos > 1 ? 's' : ''}</span>` : '—'}</td>
+                </tr>`;
+            });
+        }
+
+        // RELATÓRIOS POR PROJETO (interno x cliente)
+        const ETAPA_STATUS_LABEL = { pendente: 'Pendente', em_andamento: 'Em andamento', concluida: 'Concluída' };
+        const OBRA_STATUS_LABEL = { nao_iniciada: 'Não iniciada', em_andamento: 'Em andamento', concluida: 'Concluída' };
+
+        function gerarHistoricoCompletoHtml(obra) {
+            const linhas = [];
+            obra.etapas.forEach(e => (e.historico || []).forEach(h => linhas.push({ ...h, origem: `${e.ordem} — ${e.nome}` })));
+            if (linhas.length === 0) return '<p>Nenhuma alteração de data registrada.</p>';
+            return `<table>
+                <thead><tr><th>Etapa</th><th>Campo</th><th>De</th><th>Para</th><th>Motivo</th><th>Quando</th></tr></thead>
+                <tbody>${linhas.map(h => `<tr><td>${h.origem}</td><td>${h.campo}</td><td>${h.de}</td><td>${h.para}</td><td>${h.motivo}</td><td>${h.quando}</td></tr>`).join('')}</tbody>
+            </table>`;
+        }
+
+        function gerarGaleriaFotosHtml(obra) {
+            const comFoto = obra.etapas.filter(e => e.foto);
+            if (comFoto.length === 0) return '<p>Nenhuma foto anexada às etapas concluídas.</p>';
+            return `<div class="galeria-fotos">${comFoto.map(e => `
+                <div class="galeria-foto-item">
+                    <img src="${e.foto}" alt="Foto — ${e.nome}">
+                    <div class="galeria-foto-legenda">${e.ordem} — ${e.nome}</div>
+                </div>`).join('')}</div>`;
+        }
+
+        function gerarRelatorioProjeto(obraId, tipo) {
+            const obra = db.obras.find(o => o.id === obraId);
+            if (!obra) return;
+            const cliente = db.clientes.find(c => c.id === obra.clienteId);
+            const levantamento = obra.etapas[0];
+            const dadosLv = levantamento.dadosLevantamento || {};
+            const tiposRegistrados = dadosLv.tipos || [];
+            const qtdPorTipo = dadosLv.qtdPorTipo || {};
+
+            const linhasEtapas = obra.etapas.map(e => {
+                const est = obterEstadoExibicao(e);
+                const atrasada = isEtapaAtrasada(e);
+                const detalheTipos = e.porTipo ? Object.entries(e.porTipo).map(([t, sub]) => {
+                    const p = calcularProgressoTipo(sub);
+                    const feitos = sub.equipamentos.filter(eq => eq.concluido).length;
+                    return `${TIPO_LABEL[t]}: ${feitos}/${sub.equipamentos.length} (${p.pct}%)`;
+                }).join(' · ') : '—';
+                return { e, est, atrasada, detalheTipos };
+            });
+
+            let corpo;
+            if (tipo === 'interno') {
+                corpo = `
+                <h2>Relatório interno</h2>
+                <p>
+                    <strong>Projeto:</strong> ${obra.nome}<br>
+                    <strong>Cliente:</strong> ${cliente ? cliente.nome : 'Não vinculado'} ${cliente ? `(Gestor: ${cliente.gestor})` : ''}<br>
+                    <strong>Status geral:</strong> ${OBRA_STATUS_LABEL[obra.status] || obra.status} — ${obra.progresso}%<br>
+                    <strong>Responsável pelo levantamento:</strong> ${dadosLv.responsavel || 'não informado'}<br>
+                    <strong>Equipamentos registrados:</strong> ${tiposRegistrados.length ? tiposRegistrados.map(t => `${TIPO_LABEL[t]}: ${qtdPorTipo[t] != null ? qtdPorTipo[t] : 0}`).join(' · ') : 'não informado'}
+                </p>
+                <table>
+                    <thead><tr><th>Etapa</th><th>Status</th><th>Progresso</th><th>Início</th><th>Entrega</th><th>Detalhamento por tipo</th></tr></thead>
+                    <tbody>${linhasEtapas.map(({ e, est, atrasada, detalheTipos }) => `
+                        <tr>
+                            <td>${e.ordem} — ${e.nome}${atrasada ? ' <span class="tag-atraso">ATRASADA</span>' : ''}</td>
+                            <td>${ETAPA_STATUS_LABEL[est.status]}</td>
+                            <td>${est.pct}%</td>
+                            <td>${formatarDataBR(e.dataInicio)}</td>
+                            <td>${formatarDataBR(e.dataEntrega)}</td>
+                            <td>${detalheTipos}</td>
+                        </tr>`).join('')}</tbody>
+                </table>
+                <h3>Fotos das etapas concluídas</h3>
+                ${gerarGaleriaFotosHtml(obra)}
+                <h3>Histórico de alterações de data</h3>
+                ${gerarHistoricoCompletoHtml(obra)}
+                <h3>Dispositivos cadastrados</h3>
+                ${obra.dispositivos.length ? `<table>
+                    <thead><tr><th>Tipo</th><th>Modelo</th><th>Qtd.</th><th>Local</th><th>Status</th></tr></thead>
+                    <tbody>${obra.dispositivos.map(d => `<tr><td>${d.tipo}</td><td>${d.modelo}</td><td>${d.qtd}</td><td>${d.local}</td><td>${d.status}</td></tr>`).join('')}</tbody>
+                </table>` : '<p>Nenhum dispositivo cadastrado.</p>'}`;
+            } else {
+                corpo = `
+                <h2>Relatório para cliente</h2>
+                <p>
+                    <strong>Projeto:</strong> ${obra.nome}<br>
+                    <strong>Cliente:</strong> ${cliente ? cliente.nome : ''}<br>
+                    <strong>Progresso geral:</strong> ${obra.progresso}%
+                </p>
+                <table>
+                    <thead><tr><th>Etapa</th><th>Status</th><th>Progresso</th><th>Previsão de entrega</th></tr></thead>
+                    <tbody>${linhasEtapas.map(({ e, est }) => `
+                        <tr>
+                            <td>${e.nome}</td>
+                            <td>${ETAPA_STATUS_LABEL[est.status]}</td>
+                            <td>${est.pct}%</td>
+                            <td>${formatarDataBR(e.dataEntrega)}</td>
+                        </tr>`).join('')}</tbody>
+                </table>
+                <h3>Fotos das etapas concluídas</h3>
+                ${gerarGaleriaFotosHtml(obra)}`;
+            }
+
+            const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>${tipo === 'interno' ? 'Relatório interno' : 'Relatório para cliente'} — ${obra.nome}</title>
+            <style>
+                body { font-family: Arial, Helvetica, sans-serif; color: #1c2b3a; padding: 32px; max-width: 900px; margin: 0 auto; }
+                h2 { margin-top: 0; } h3 { margin-top: 28px; }
+                table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px; }
+                th, td { border: 1px solid #d7e3f0; padding: 8px 10px; text-align: left; }
+                th { background: #f2f7fc; font-size: 11px; text-transform: uppercase; color: #62788d; }
+                .tag-atraso { color: #d5455c; font-weight: 700; font-size: 11px; }
+                .galeria-fotos { display: flex; flex-wrap: wrap; gap: 16px; margin: 14px 0 24px; }
+                .galeria-foto-item { width: 220px; }
+                .galeria-foto-item img { width: 100%; border-radius: 6px; border: 1px solid #d7e3f0; display: block; }
+                .galeria-foto-legenda { font-size: 12px; color: #62788d; margin-top: 6px; }
+                .no-print button { font-family: inherit; font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 6px; border: 1px solid #2f6fed; background: #2f6fed; color: #fff; cursor: pointer; margin-bottom: 24px; }
+                @media print { .no-print { display: none; } }
+            </style>
+            </head><body>
+                <div class="no-print"><button onclick="window.print()">Imprimir / salvar PDF</button></div>
+                ${corpo}
+            </body></html>`;
+
+            const janela = window.open('', '_blank');
+            if (!janela) { alert('O navegador bloqueou a abertura do relatório. Permita pop-ups para este site.'); return; }
+            janela.document.write(html);
+            janela.document.close();
+        }
+
+        // MODAL: EQUIPAMENTOS DO PROJETO (aberto a partir da tabela de Andamento)
+        // É aqui que o controle da obra passa a acontecer: cada etapa tem um botão "Editar"
+        // que abre o modal completo (checklist de equipamentos, datas, status). Os cards do
+        // kanban em "Fluxo da obra" ficam só informativos, sem interação.
+        let modalEquipProjetoObraId = null;
+
+        function abrirEquipamentosProjeto(obraId) {
+            modalEquipProjetoObraId = obraId;
+            const obra = db.obras.find(o => o.id === obraId);
+            const levantamento = obra.etapas[0];
+            const dados = levantamento.dadosLevantamento || {};
+            const tipos = dados.tipos || [];
+            const qtdPorTipo = dados.qtdPorTipo || {};
+
+            document.getElementById('modal-equip-projeto-titulo').textContent = obra.nome;
+            document.getElementById('modal-equip-projeto-cliente').textContent = `Cliente: ${nomeCliente(obra.clienteId)}`;
+            document.getElementById('modal-equip-projeto-responsavel').textContent = tipos.length > 0
+                ? `Responsável pelo levantamento: ${dados.responsavel || 'não informado'}  ·  Equipamentos: ${tipos.map(tipo => `${TIPO_LABEL[tipo]}: ${qtdPorTipo[tipo] != null ? qtdPorTipo[tipo] : 0}`).join('  ·  ')}`
+                : 'Levantamento técnico ainda não foi preenchido para este projeto.';
+
+            const corpo = document.getElementById('modal-equip-projeto-corpo');
+            corpo.innerHTML = obra.etapas.map(e => {
+                const est = obterEstadoExibicao(e);
+                const badge = est.status === 'concluida' ? 'status-concluida' : (est.status === 'em_andamento' ? 'status-andamento' : 'status-pendente');
+                const label = est.status === 'concluida' ? 'Concluída' : (est.status === 'em_andamento' ? 'Em andamento' : 'Pendente');
+                const atrasada = isEtapaAtrasada(e);
+                return `
+                <div class="modal-data-row">
+                    <div class="modal-data-info">
+                        <span class="modal-data-label">ETAPA ${e.ordem}</span>
+                        <strong>${e.nome}</strong>
+                        <span style="margin-top:4px; display:flex; align-items:center; gap:6px;">
+                            <span class="badge ${badge}">${label}</span>
+                            ${atrasada ? '<span class="badge status-atrasada">Atrasada</span>' : ''}
+                            <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-dim);">${est.pct}%</span>
+                        </span>
+                    </div>
+                    <button class="btn btn-sm" onclick="abrirDetalhesEtapaDoProjeto(${obra.id}, '${e.ordem}')">Editar</button>
+                </div>`;
+            }).join('');
+
+            document.getElementById('modal-equip-projeto').classList.add('ativo');
+        }
+
+        function fecharEquipamentosProjeto() {
+            const modal = document.getElementById('modal-equip-projeto');
+            if (modal) modal.classList.remove('ativo');
+        }
+
+        // Fecha o resumo do projeto e abre a etapa em modo de edição completo (checklist/datas/status)
+        function abrirDetalhesEtapaDoProjeto(obraId, ordem) {
+            fecharEquipamentosProjeto();
+            abrirDetalhesEtapa(obraId, ordem);
+        }
+
         // RENDERIZAÇÃO: CLIENTES
         function renderClientes() {
             const tbody = document.getElementById('clientes-lista');
             tbody.innerHTML = '';
             if (db.clientes.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4">Nenhum cliente cadastrado</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5">Nenhum cliente cadastrado</td></tr>';
                 return;
             }
             db.clientes.forEach(c => {
@@ -1076,6 +1461,7 @@
                 tbody.innerHTML += `
                 <tr>
                     <td>${c.nome}</td>
+                    <td>${c.gestor}</td>
                     <td>${c.contato}</td>
                     <td>${c.telefone}</td>
                     <td>${qtdObras}</td>
@@ -1085,6 +1471,7 @@
 
         function abrirNovoCliente() {
             document.getElementById('nc-nome').value = '';
+            document.getElementById('nc-gestor').value = '';
             document.getElementById('nc-contato').value = '';
             document.getElementById('nc-telefone').value = '';
             document.getElementById('modal-novo-cliente').classList.add('ativo');
@@ -1097,13 +1484,14 @@
 
         function confirmarNovoCliente() {
             const nome = document.getElementById('nc-nome').value.trim();
+            const gestor = document.getElementById('nc-gestor').value.trim();
             const contato = document.getElementById('nc-contato').value.trim();
             const telefone = document.getElementById('nc-telefone').value.trim();
 
             if (!nome) { alert('Informe o nome do cliente.'); return; }
 
             const novoId = Math.max(0, ...db.clientes.map(c => c.id)) + 1;
-            db.clientes.push({ id: novoId, nome, contato: contato || 'Não informado', telefone: telefone || 'Não informado' });
+            db.clientes.push({ id: novoId, nome, gestor: gestor || 'Não informado', contato: contato || 'Não informado', telefone: telefone || 'Não informado' });
 
             fecharNovoCliente();
             renderClientes();
