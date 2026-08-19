@@ -289,9 +289,10 @@
     <section id="tela-configuracoes" class="tela">
         <div class="container">
             <div class="section-title">Usuários cadastrados</div>
+            <button class="btn btn-primary" onclick="abrirNovoUsuario()" style="margin-bottom: 16px;">+ Novo usuário</button>
             <div class="table-scroll">
                 <table class="devices-table">
-                    <thead><tr><th>Nome (login)</th><th>E-mail</th><th>Perfil</th><th>Status</th></tr></thead>
+                    <thead><tr><th>Nome (login)</th><th>E-mail</th><th>Nível de acesso</th><th>Status</th><th></th></tr></thead>
                     <tbody id="config-usuarios"></tbody>
                 </table>
             </div>
@@ -354,7 +355,7 @@
             <button class="btn btn-primary" onclick="abrirNovoCliente()" style="margin-bottom: 16px;">+ Novo cliente</button>
             <div class="table-scroll">
                 <table class="devices-table">
-                    <thead><tr><th>Nome</th><th>Gestor</th><th>E-mail</th><th>Telefone</th><th>Obras</th></tr></thead>
+                    <thead><tr><th>Nome</th><th>Gestor</th><th>E-mail</th><th>Telefone</th><th>Obras</th><th></th></tr></thead>
                     <tbody id="clientes-lista"></tbody>
                 </table>
             </div>
@@ -397,7 +398,7 @@
             <div class="modal-body">
                 <div class="table-scroll" style="max-height:40vh; overflow-y:auto;">
                     <table class="devices-table">
-                        <thead><tr><th>Descrição</th><th>Solicitante</th><th>Arquivo</th><th>Status</th><th>Data</th><th></th></tr></thead>
+                        <thead><tr><th>Descrição</th><th>Solicitante</th><th>Arquivo</th><th>Status</th><th>Recebido por</th><th>Data</th><th></th></tr></thead>
                         <tbody id="modal-pedidos-lista"></tbody>
                     </table>
                 </div>
@@ -460,13 +461,73 @@
         </div>
     </div>
 
+    <!-- MODAL: NOVO/EDITAR USUÁRIO -->
+    <div id="modal-usuario" class="modal-overlay" onclick="if(event.target === this) fecharUsuario()">
+        <div class="modal-box">
+            <div class="modal-head">
+                <div>
+                    <div class="etapa-ordem" id="modal-usuario-tipo">NOVO USUÁRIO</div>
+                    <div class="modal-etapa-nome">Cadastro de usuário</div>
+                </div>
+                <button class="modal-close" onclick="fecharUsuario()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-edit-data" style="display:flex;">
+                    <label>Nome (login) <input type="text" id="us-nome" placeholder="Nome de usuário"></label>
+                    <label id="us-senha-wrap">Senha <input type="text" id="us-senha" placeholder="Senha de acesso"></label>
+                    <label>E-mail <input type="email" id="us-email" placeholder="email@empresa.com"></label>
+                    <label>Nível de acesso
+                        <select id="us-perfil">
+                            <option value="admin">Administrador</option>
+                            <option value="gestor">Gestor</option>
+                            <option value="tecnico">Técnico</option>
+                        </select>
+                    </label>
+                    <label>Status
+                        <select id="us-status">
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                        </select>
+                    </label>
+                    <div class="modal-edit-actions">
+                        <button class="btn" onclick="fecharUsuario()">Cancelar</button>
+                        <button class="btn btn-primary" onclick="confirmarUsuario()">Salvar usuário</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ALTERAR SENHA -->
+    <div id="modal-senha-usuario" class="modal-overlay" onclick="if(event.target === this) fecharAlterarSenha()">
+        <div class="modal-box">
+            <div class="modal-head">
+                <div>
+                    <div class="etapa-ordem">ALTERAR SENHA</div>
+                    <div class="modal-etapa-nome" id="modal-senha-usuario-nome">Usuário</div>
+                </div>
+                <button class="modal-close" onclick="fecharAlterarSenha()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-edit-data" style="display:flex;">
+                    <label>Nova senha <input type="password" id="us-nova-senha" placeholder="Digite a nova senha"></label>
+                    <label>Confirmar nova senha <input type="password" id="us-confirmar-senha" placeholder="Repita a nova senha"></label>
+                    <div class="modal-edit-actions">
+                        <button class="btn" onclick="fecharAlterarSenha()">Cancelar</button>
+                        <button class="btn btn-primary" onclick="confirmarAlterarSenha()">Salvar nova senha</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL: NOVO CLIENTE -->
     <div id="modal-novo-cliente" class="modal-overlay" onclick="if(event.target === this) fecharNovoCliente()">
         <div class="modal-box">
             <div class="modal-head">
                 <div>
-                    <div class="etapa-ordem">NOVO CLIENTE</div>
-                    <div class="modal-etapa-nome">Cadastrar cliente</div>
+                    <div class="etapa-ordem" id="modal-cliente-tipo">NOVO CLIENTE</div>
+                    <div class="modal-etapa-nome">Cadastro de cliente</div>
                 </div>
                 <button class="modal-close" onclick="fecharNovoCliente()">&times;</button>
             </div>
@@ -475,7 +536,7 @@
                     <label>Nome do cliente <input type="text" id="nc-nome" placeholder="Nome do cliente/empresa"></label>
                     <label>Nome do gestor <input type="text" id="nc-gestor" placeholder="Responsável pelo contrato"></label>
                     <label>E-mail <input type="email" id="nc-contato" placeholder="contato@empresa.com"></label>
-                    <label>Telefone <input type="text" id="nc-telefone" placeholder="(11) 90000-0000"></label>
+                    <label>Telefone <input type="text" id="nc-telefone" placeholder="(11) 90000-0000" maxlength="15" inputmode="numeric" oninput="formatarTelefone(this)"></label>
                     <div class="modal-edit-actions">
                         <button class="btn" onclick="fecharNovoCliente()">Cancelar</button>
                         <button class="btn btn-primary" onclick="confirmarNovoCliente()">Salvar cliente</button>
@@ -611,7 +672,7 @@
                     ],
                     plantas: [],
                     pedidosLM: [
-                        { id: 1, descricao: 'Catracas — Portaria', solicitante: 'Bruno Tavares', arquivo: null, nomeArquivo: null, status: 'aprovado', data: '2026-07-10' }
+                        { id: 1, descricao: 'Catracas — Portaria', solicitante: 'Bruno Tavares', arquivo: null, nomeArquivo: null, status: 'aprovado', recebidoPor: null, data: '2026-07-10' }
                     ],
                     etapas: [
                         { ordem: '01', nome: 'Levantamento Técnico', status: 'concluida', pct: 100, cor: 'var(--green)', icone: '✓', desc: 'Vistoria inicial e viabilidade', dataInicio: '2026-06-20', dataEntrega: '2026-06-24', historico: [], formularioLevantamento: true, dadosLevantamento: { responsavel: 'Bruno Tavares', tipos: ['controle_acesso'], qtdPorTipo: { controle_acesso: 8, cftv: null } } },
@@ -1357,10 +1418,15 @@
                 fecharEquipamentosProjeto();
                 fecharPlantasProjeto();
                 fecharPedidosProjeto();
+                fecharUsuario();
+                fecharAlterarSenha();
             }
         });
 
-        // RENDERIZAÇÃO: CONFIGURAÇÕES
+        // RENDERIZAÇÃO E CADASTRO: CONFIGURAÇÕES (USUÁRIOS)
+        const PERFIL_LABEL = { admin: 'Administrador', gestor: 'Gestor', tecnico: 'Técnico' };
+        let usuarioEditandoId = null;
+
         function renderConfiguracoes() {
             const tbody = document.getElementById('config-usuarios');
             tbody.innerHTML = '';
@@ -1369,10 +1435,144 @@
                 <tr>
                     <td>${u.nome}</td>
                     <td>${u.email}</td>
-                    <td style="text-transform: capitalize;">${u.perfil}</td>
-                    <td style="color: var(--green);">${u.ativo}</td>
+                    <td>${PERFIL_LABEL[u.perfil] || u.perfil}</td>
+                    <td style="color: ${u.ativo === 'Ativo' ? 'var(--green)' : 'var(--text-dim)'};">${u.ativo}</td>
+                    <td>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <button class="btn btn-sm" onclick="abrirEditarUsuario(${u.id})">Editar</button>
+                            <button class="btn btn-sm" onclick="abrirAlterarSenha(${u.id})">Senha</button>
+                            <button class="btn btn-sm" onclick="excluirUsuario(${u.id})">Excluir</button>
+                        </div>
+                    </td>
                 </tr>`;
             });
+        }
+
+        function abrirNovoUsuario() {
+            usuarioEditandoId = null;
+            document.getElementById('modal-usuario-tipo').textContent = 'NOVO USUÁRIO';
+            document.getElementById('us-nome').value = '';
+            document.getElementById('us-senha').value = '';
+            document.getElementById('us-email').value = '';
+            document.getElementById('us-perfil').value = 'tecnico';
+            document.getElementById('us-status').value = 'Ativo';
+            document.getElementById('us-senha-wrap').style.display = 'flex';
+            document.getElementById('modal-usuario').classList.add('ativo');
+        }
+
+        function abrirEditarUsuario(id) {
+            const usuario = db.usuarios.find(u => u.id === id);
+            if (!usuario) return;
+            usuarioEditandoId = id;
+            document.getElementById('modal-usuario-tipo').textContent = 'EDITAR USUÁRIO';
+            document.getElementById('us-nome').value = usuario.nome;
+            document.getElementById('us-email').value = usuario.email;
+            document.getElementById('us-perfil').value = usuario.perfil;
+            document.getElementById('us-status').value = usuario.ativo;
+            // Senha se altera pelo botão "Senha" na lista, não por aqui
+            document.getElementById('us-senha-wrap').style.display = 'none';
+            document.getElementById('modal-usuario').classList.add('ativo');
+        }
+
+        function fecharUsuario() {
+            const modal = document.getElementById('modal-usuario');
+            if (modal) modal.classList.remove('ativo');
+            usuarioEditandoId = null;
+        }
+
+        function confirmarUsuario() {
+            const nome = document.getElementById('us-nome').value.trim();
+            const email = document.getElementById('us-email').value.trim();
+            const perfil = document.getElementById('us-perfil').value;
+            const status = document.getElementById('us-status').value;
+
+            if (!nome || !email) { alert('Preencha nome e e-mail.'); return; }
+
+            const duplicado = db.usuarios.find(u => u.nome === nome && u.id !== usuarioEditandoId);
+            if (duplicado) { alert('Já existe um usuário com esse nome de login.'); return; }
+
+            if (usuarioEditandoId) {
+                const usuario = db.usuarios.find(u => u.id === usuarioEditandoId);
+                usuario.nome = nome; usuario.email = email; usuario.perfil = perfil; usuario.ativo = status;
+
+                // Se o usuário editado é o que está logado, atualiza a sessão na hora
+                // (nome/nível/menu de Configurações refletem a mudança sem precisar logar de novo)
+                const sessionRaw = localStorage.getItem('sessionUser');
+                if (sessionRaw && JSON.parse(sessionRaw).id === usuarioEditandoId) {
+                    localStorage.setItem('sessionUser', JSON.stringify(usuario));
+                    configurarSessao(usuario);
+                }
+            } else {
+                const senha = document.getElementById('us-senha').value;
+                if (!senha) { alert('Defina uma senha para o novo usuário.'); return; }
+                const novoId = Math.max(0, ...db.usuarios.map(u => u.id)) + 1;
+                db.usuarios.push({ id: novoId, nome, senha, email, perfil, ativo: status });
+            }
+
+            fecharUsuario();
+            renderConfiguracoes();
+        }
+
+        // ALTERAR SENHA (ação separada da edição de perfil)
+        let usuarioSenhaId = null;
+
+        function abrirAlterarSenha(id) {
+            const usuario = db.usuarios.find(u => u.id === id);
+            if (!usuario) return;
+            usuarioSenhaId = id;
+            document.getElementById('modal-senha-usuario-nome').textContent = usuario.nome;
+            document.getElementById('us-nova-senha').value = '';
+            document.getElementById('us-confirmar-senha').value = '';
+            document.getElementById('modal-senha-usuario').classList.add('ativo');
+        }
+
+        function fecharAlterarSenha() {
+            const modal = document.getElementById('modal-senha-usuario');
+            if (modal) modal.classList.remove('ativo');
+            usuarioSenhaId = null;
+        }
+
+        function confirmarAlterarSenha() {
+            if (!usuarioSenhaId) return;
+            const novaSenha = document.getElementById('us-nova-senha').value;
+            const confirmarSenha = document.getElementById('us-confirmar-senha').value;
+
+            if (!novaSenha) { alert('Digite a nova senha.'); return; }
+            if (novaSenha !== confirmarSenha) { alert('As senhas não coincidem.'); return; }
+
+            const usuario = db.usuarios.find(u => u.id === usuarioSenhaId);
+            usuario.senha = novaSenha;
+
+            const sessionRaw = localStorage.getItem('sessionUser');
+            if (sessionRaw && JSON.parse(sessionRaw).id === usuarioSenhaId) {
+                localStorage.setItem('sessionUser', JSON.stringify(usuario));
+            }
+
+            fecharAlterarSenha();
+            alert('Senha atualizada com sucesso.');
+        }
+
+        // EXCLUIR USUÁRIO
+        function excluirUsuario(id) {
+            const usuario = db.usuarios.find(u => u.id === id);
+            if (!usuario) return;
+
+            const sessionRaw = localStorage.getItem('sessionUser');
+            const sessionUser = sessionRaw ? JSON.parse(sessionRaw) : null;
+            if (sessionUser && sessionUser.id === id) {
+                alert('Você não pode excluir o próprio usuário enquanto estiver logado com ele.');
+                return;
+            }
+
+            if (usuario.perfil === 'admin' && db.usuarios.filter(u => u.perfil === 'admin').length === 1) {
+                alert('Não é possível excluir o único administrador do sistema.');
+                return;
+            }
+
+            if (!confirm(`Excluir o usuário "${usuario.nome}"? Essa ação não pode ser desfeita.`)) return;
+
+            db.usuarios = db.usuarios.filter(u => u.id !== id);
+            renderConfiguracoes();
         }
 
         // RENDERIZAÇÃO: ANDAMENTO (PROJETOS + RELATÓRIOS)
@@ -1508,7 +1708,12 @@
                 ${obra.dispositivos.length ? `<table>
                     <thead><tr><th>Tipo</th><th>Modelo</th><th>Qtd.</th><th>Local</th><th>Status</th></tr></thead>
                     <tbody>${obra.dispositivos.map(d => `<tr><td>${d.tipo}</td><td>${d.modelo}</td><td>${d.qtd}</td><td>${d.local}</td><td>${d.status}</td></tr>`).join('')}</tbody>
-                </table>` : '<p>Nenhum dispositivo cadastrado.</p>'}`;
+                </table>` : '<p>Nenhum dispositivo cadastrado.</p>'}
+                <h3>Pedidos de material (LM)</h3>
+                ${obra.pedidosLM.length ? `<table>
+                    <thead><tr><th>Descrição</th><th>Solicitante</th><th>Status</th><th>Recebido por</th><th>Data</th></tr></thead>
+                    <tbody>${obra.pedidosLM.map(p => `<tr><td>${p.descricao}</td><td>${p.solicitante}</td><td>${STATUS_LM_LABEL[p.status]}</td><td>${p.recebidoPor || '—'}</td><td>${formatarDataBR(p.data)}</td></tr>`).join('')}</tbody>
+                </table>` : '<p>Nenhum pedido de material registrado.</p>'}`;
             } else {
                 corpo = `
                 <h2>Relatório para cliente</h2>
@@ -1722,9 +1927,10 @@
                             ${Object.entries(STATUS_LM_LABEL).map(([valor, label]) => `<option value="${valor}" ${p.status === valor ? 'selected' : ''}>${label}</option>`).join('')}
                         </select>
                     </td>
+                    <td>${p.recebidoPor || '—'}</td>
                     <td>${formatarDataBR(p.data)}</td>
                     <td><button class="btn btn-sm" onclick="removerPedido(${p.id})">Remover</button></td>
-                </tr>`).join('') : '<tr><td colspan="6">Nenhum pedido registrado ainda.</td></tr>';
+                </tr>`).join('') : '<tr><td colspan="7">Nenhum pedido registrado ainda.</td></tr>';
         }
 
         function adicionarPedido() {
@@ -1758,7 +1964,20 @@
         function atualizarStatusPedido(id, novoStatus) {
             const obra = db.obras.find(o => o.id === modalPedidosObraId);
             const item = obra.pedidosLM.find(p => p.id === id);
-            if (item) item.status = novoStatus;
+            if (!item) return;
+
+            // "Recebido por" só é pedido uma vez e não pode mais ser alterado depois de preenchido.
+            if (novoStatus === 'recebido' && !item.recebidoPor) {
+                const nome = prompt('Quem recebeu este pedido?');
+                if (!nome || !nome.trim()) {
+                    renderModalPedidos(obra);
+                    return;
+                }
+                item.recebidoPor = nome.trim();
+            }
+
+            item.status = novoStatus;
+            renderModalPedidos(obra);
             renderPedidos();
         }
 
@@ -1769,12 +1988,30 @@
             renderPedidos();
         }
 
+        // Máscara de telefone: (DD) DDDDD-DDDD para celular ou (DD) DDDD-DDDD para fixo,
+        // formatado conforme o usuário digita — só dígitos são considerados.
+        function formatarTelefone(input) {
+            let v = input.value.replace(/\D/g, '').slice(0, 11);
+
+            if (v.length > 10) {
+                v = v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+            } else if (v.length > 6) {
+                v = v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+            } else if (v.length > 2) {
+                v = v.replace(/(\d{2})(\d{0,4})/, '($1) $2');
+            } else if (v.length > 0) {
+                v = v.replace(/(\d{0,2})/, '($1');
+            }
+
+            input.value = v;
+        }
+
         // RENDERIZAÇÃO: CLIENTES
         function renderClientes() {
             const tbody = document.getElementById('clientes-lista');
             tbody.innerHTML = '';
             if (db.clientes.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5">Nenhum cliente cadastrado</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6">Nenhum cliente cadastrado</td></tr>';
                 return;
             }
             db.clientes.forEach(c => {
@@ -1786,11 +2023,16 @@
                     <td>${c.contato}</td>
                     <td>${c.telefone}</td>
                     <td>${qtdObras}</td>
+                    <td><button class="btn btn-sm" onclick="abrirEditarCliente(${c.id})">Editar</button></td>
                 </tr>`;
             });
         }
 
+        let clienteEditandoId = null;
+
         function abrirNovoCliente() {
+            clienteEditandoId = null;
+            document.getElementById('modal-cliente-tipo').textContent = 'NOVO CLIENTE';
             document.getElementById('nc-nome').value = '';
             document.getElementById('nc-gestor').value = '';
             document.getElementById('nc-contato').value = '';
@@ -1798,9 +2040,22 @@
             document.getElementById('modal-novo-cliente').classList.add('ativo');
         }
 
+        function abrirEditarCliente(id) {
+            const cliente = db.clientes.find(c => c.id === id);
+            if (!cliente) return;
+            clienteEditandoId = id;
+            document.getElementById('modal-cliente-tipo').textContent = 'EDITAR CLIENTE';
+            document.getElementById('nc-nome').value = cliente.nome;
+            document.getElementById('nc-gestor').value = cliente.gestor;
+            document.getElementById('nc-contato').value = cliente.contato;
+            document.getElementById('nc-telefone').value = cliente.telefone;
+            document.getElementById('modal-novo-cliente').classList.add('ativo');
+        }
+
         function fecharNovoCliente() {
             const modal = document.getElementById('modal-novo-cliente');
             if (modal) modal.classList.remove('ativo');
+            clienteEditandoId = null;
         }
 
         function confirmarNovoCliente() {
@@ -1811,8 +2066,16 @@
 
             if (!nome) { alert('Informe o nome do cliente.'); return; }
 
-            const novoId = Math.max(0, ...db.clientes.map(c => c.id)) + 1;
-            db.clientes.push({ id: novoId, nome, gestor: gestor || 'Não informado', contato: contato || 'Não informado', telefone: telefone || 'Não informado' });
+            if (clienteEditandoId) {
+                const cliente = db.clientes.find(c => c.id === clienteEditandoId);
+                cliente.nome = nome;
+                cliente.gestor = gestor || 'Não informado';
+                cliente.contato = contato || 'Não informado';
+                cliente.telefone = telefone || 'Não informado';
+            } else {
+                const novoId = Math.max(0, ...db.clientes.map(c => c.id)) + 1;
+                db.clientes.push({ id: novoId, nome, gestor: gestor || 'Não informado', contato: contato || 'Não informado', telefone: telefone || 'Não informado' });
+            }
 
             fecharNovoCliente();
             renderClientes();
